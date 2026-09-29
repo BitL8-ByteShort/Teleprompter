@@ -1,6 +1,11 @@
 import AppKit
 import SwiftUI
 
+private enum ReadingPanelMetrics {
+    static let controlsHeight: Double = 32
+    static let bottomPadding: Double = 12
+}
+
 private final class ReadingPanel: NSPanel {
     var onScroll: ((NSEvent) -> Void)?
     override var canBecomeKey: Bool { false }
@@ -64,7 +69,8 @@ final class OverlayController {
             model.errorMessage = "Open the MacBook display to place the prompter beneath its camera."
             return
         }
-        let height = model.lineHeight * Double(model.settings.lineCount) + 56
+        let height = model.lineHeight * Double(model.settings.lineCount)
+            + ReadingPanelMetrics.controlsHeight + ReadingPanelMetrics.bottomPadding
         let frame = OverlayGeometry.frame(screen: screen.frame, safeTop: screen.safeAreaInsets.top, visibleTop: screen.visibleFrame.maxY, width: model.settings.width, height: height)
         panel.setFrame(frame, display: true)
         panel.orderFrontRegardless()
@@ -126,12 +132,11 @@ struct ReadingPanelView: View {
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(.white.opacity(0.85))
             .padding(.horizontal, 24)
-            .frame(height: 32)
+            .frame(height: ReadingPanelMetrics.controlsHeight)
             .opacity(hovered ? 1 : 0)
             .allowsHitTesting(hovered)
         }
-        .padding(.top, 12)
-        .padding(.bottom, 12)
+        .padding(.bottom, ReadingPanelMetrics.bottomPadding)
         .background(.black.opacity(model.settings.opacity), in: RoundedRectangle(cornerRadius: 16))
         .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.12)) }
         .overlay {

@@ -188,6 +188,16 @@ read-through; numerical tests are not proof of that experience.
   `noWindowsAvailable` error. Panel rendering remains inspectable; physical
   gesture feel and timing are still a user check.
 
+## Tighter camera placement — September 29
+
+- Removed the 8-point gap below the notch/menu bar and the 12-point top padding
+  inside the panel. The first reading line is 20 points closer to the camera;
+  the panel height now matches its content without the removed padding.
+- All three placement tests passed: an offset built-in display, a display
+  without a notch, and a notched display with the menu bar hidden. The signed
+  app built and launched successfully. Physical notch clearance and the new
+  reading position remain a visual user check.
+
 ## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made
