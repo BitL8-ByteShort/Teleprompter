@@ -1,0 +1,3 @@
+# Local script library
+
+Add a collapsible My Scripts sidebar to the existing editor, seeded with the default welcome script. Scripts have names and previews; the editor shows word count and estimated reading time. Support search by title or text, new, rename, duplicate, move to Trash, restore, and plain-text import/export. Autosave locally and remember each script's reading position and the last selection. Switching scripts saves edits and pauses playback. Preserve existing drafts during migration. Keep reading settings global, keep the repository private, and refresh the installable app. No accounts, cloud sync, folders, or imports from other teleprompter apps.
