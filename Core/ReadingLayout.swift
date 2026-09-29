@@ -31,4 +31,20 @@ struct ReadingLayout {
         let fraction = min(1, max(0, (position - Double(line.firstWord)) / Double(max(1, line.endWord - line.firstWord))))
         return (Double(index) + fraction) * lineHeight
     }
+
+    /// Inverse of offset, preserving fractional words for smooth manual scrolling.
+    func position(atOffset offset: Double, lineHeight: Double) -> Double {
+        guard !lines.isEmpty, lineHeight > 0 else { return 0 }
+        let progress = min(Double(lines.count), max(0, offset / lineHeight))
+        let index = min(lines.count - 1, Int(progress))
+        let line = lines[index]
+        return Double(line.firstWord) + (progress - Double(index)) * Double(line.endWord - line.firstWord)
+    }
+
+    func scrolledPosition(from offset: Double, by delta: Double, lineHeight: Double) -> Double {
+        // Keep the last line readable instead of scrolling into a blank panel.
+        let lastLineOffset = Double(max(0, lines.count - 1)) * lineHeight
+        let nextOffset = min(lastLineOffset, max(0, offset + delta))
+        return position(atOffset: nextOffset, lineHeight: lineHeight)
+    }
 }

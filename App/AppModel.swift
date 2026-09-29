@@ -180,6 +180,17 @@ final class AppModel {
         alignment.reset()
         save()
     }
+    func scrollReadingPanel(by delta: Double) {
+        guard delta.isFinite, delta != 0, !layout.lines.isEmpty else { return }
+        // Stop capture once, not on every trackpad/momentum event. Start from the
+        // visible offset, which may trail recognized speech during catch-up.
+        if running { pause() }
+        let position = layout.scrolledPosition(from: readingOffset, by: delta, lineHeight: lineHeight)
+        playback.seek(position, wordCount: script.tokens.count)
+        syncReadingOffset()
+        alignment.reset()
+        scheduleSave()
+    }
     func paragraph(_ direction: Int) { seek(script.paragraph(at: Int(playback.position), direction: direction)) }
     func restart() { seek(0) }
     func resume(from word: Int) { seek(word); togglePlayback() }

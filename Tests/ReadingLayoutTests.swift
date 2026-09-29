@@ -17,3 +17,31 @@ import Testing
     #expect(layout.offset(position: 2.01, lineHeight: 50) > 50)
     #expect(layout.offset(position: 2.01, lineHeight: 50) - layout.offset(position: 1.99, lineHeight: 50) < 1)
 }
+
+@Test func manualScrollingPreservesFractionalPositionAcrossUnequalLines() {
+    let layout = ReadingLayout(script: Script("one two\nthree four five six\nseven eight nine"), fontSize: 36, width: 1000)
+    for position in stride(from: 0.0, through: 9.0, by: 0.125) {
+        let offset = layout.offset(position: position, lineHeight: 48)
+        #expect(abs(layout.position(atOffset: offset, lineHeight: 48) - position) < 0.000001)
+    }
+    #expect(layout.scrolledPosition(from: 24, by: 48, lineHeight: 48) == 4)
+    #expect(layout.scrolledPosition(from: 72, by: -48, lineHeight: 48) == 1)
+}
+
+@Test func manualScrollingStopsAtReadableEndsAndResumesFromTheNewPassage() {
+    let script = Script("one two\nthree four five six\nseven eight nine")
+    let layout = ReadingLayout(script: script, fontSize: 36, width: 1000)
+    #expect(layout.scrolledPosition(from: 0, by: -500, lineHeight: 48) == 0)
+    #expect(layout.scrolledPosition(from: 0, by: 500, lineHeight: 48) == 6)
+    var playback = Playback()
+    playback.seek(9, wordCount: 9)
+    #expect(playback.state == .finished)
+    playback.seek(layout.scrolledPosition(from: 144, by: -72, lineHeight: 48), wordCount: 9)
+    #expect(playback.state == .paused)
+    #expect(playback.position == 4)
+    playback.play(now: 100, wordCount: 9)
+    playback.tick(now: 104, wordCount: 9, wpm: 60, automatic: true)
+    #expect(playback.position == 5)
+    #expect(ReadingLayout(script: Script(""), fontSize: 36, width: 400)
+        .scrolledPosition(from: 0, by: 100, lineHeight: 48) == 0)
+}

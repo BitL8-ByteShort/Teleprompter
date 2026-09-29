@@ -142,6 +142,22 @@ read-through; numerical tests are not proof of that experience.
   These are disk sizes, not RAM requirements. No 8 GB/16 GB hardware or MacBook
   Neo performance claim is established by this M5 Pro validation.
 
+## Manual panel scrolling — September 29
+
+- The floating panel handles AppKit wheel events directly without becoming the
+  key window. Precise trackpad deltas move by points; ordinary wheel deltas move
+  by lines, using the user's system scrolling direction.
+- Scrolling pauses active playback/capture, maps the visible offset back to a
+  fractional script position, resets speech alignment, and debounces draft saves.
+  It clamps to the first and last readable lines and can leave the finished state
+  for a retake. Existing Play controls resume from the new position.
+- Both focused regression tests passed: offset/position round trips across lines
+  with different word counts, movement in both directions, empty-script and end
+  bounds, and resuming after scrolling back from completion. The signed app was
+  rebuilt and launched successfully.
+- Physical trackpad and mouse-wheel feel remains a user check. The editor was
+  actively in use during validation, so automated UI interaction was stopped.
+
 ## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made

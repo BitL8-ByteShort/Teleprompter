@@ -2,8 +2,17 @@ import AppKit
 import SwiftUI
 
 private final class ReadingPanel: NSPanel {
+    var onScroll: ((NSEvent) -> Void)?
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .scrollWheel {
+            onScroll?(event)
+            return
+        }
+        super.sendEvent(event)
+    }
 }
 
 @MainActor
@@ -14,7 +23,15 @@ final class OverlayController {
 
     init(model: AppModel) {
         self.model = model
-        panel = ReadingPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        let readingPanel = ReadingPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        readingPanel.onScroll = { [weak model] event in
+            guard let model else { return }
+            // AppKit already applies the user's natural-scrolling preference.
+            // Trackpads report points; traditional wheels report line increments.
+            let scale = event.hasPreciseScrollingDeltas ? 1 : model.lineHeight
+            model.scrollReadingPanel(by: -Double(event.scrollingDeltaY) * scale)
+        }
+        panel = readingPanel
         panel.title = "Teleprompter Reading Panel"
         panel.identifier = NSUserInterfaceItemIdentifier("teleprompter-reading-panel")
         panel.isReleasedWhenClosed = false
