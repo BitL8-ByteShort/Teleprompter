@@ -5,3 +5,11 @@
 .env
 .env.*
 !.env.example
+
+.build/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+artifacts/
