@@ -47,8 +47,11 @@ display plus an external 1080p monitor; Cap Desktop 0.6.0.
   formats, and bounded retries. All 19 tests passed in the final run, including
   Apple's on-device recognition of the generated fixture and actual script
   alignment.
-- Live spoken-word advancement still needs confirmation. The speaker test was
-  inaudible because the system output was muted; no sound settings were changed.
+- Live microphone recognition subsequently advanced the script through words
+  6–9 of the welcome script, confirmed by the running app's alignment events.
+  The earlier synthetic speaker test was inaudible because system output was
+  muted; no sound settings were changed. A full visual read-through and the
+  practical distance/eye-movement checks remain pending.
 
 ## Pending live checks
 
