@@ -79,15 +79,31 @@ After adding a Swift source file, regenerate the checked-in Xcode project with
 `python3 script/generate_project.py`. The generator requires only Python's
 standard library.
 
-Draft storage: `~/Library/Application Support/Teleprompter/draft.json`.
+Library storage: `~/Library/Application Support/Teleprompter/library.json`.
+It contains script IDs, titles, text, fractional word positions, timestamps,
+Trash, active selection, and shared settings. Version 1 is written atomically.
+The legacy `draft.json` stays untouched. Migration seeds the welcome script and
+keeps distinct existing text as a separate Recovered draft.
 Model storage: `~/Library/Application Support/Teleprompter/Models/`.
 Incomplete downloads are not offered for selection; retry **Download** after a
 failure or cancellation. Download receipts check that installed files remain
 present and complete before use.
-Unreadable drafts are backed up before new autosaves; if backup fails, autosave
-is suspended and the editor offers export. Generated media and build outputs
-are ignored by Git.
+Unreadable or newer library versions block autosave instead of replacing user
+data. Failed transactions retain the current in-memory library; the editor
+keeps its unsaved text and blocks selection changes until saving works again.
+Generated media and build outputs are ignored by Git.
+
+`./script/check_library_integration.sh` compiles the real AppModel and AppKit
+editor with silent speech doubles and temporary storage. It checks saving on
+switch, playback/manual-resume cancellation, cancellation during speech startup,
+import as a new script, cross-script Undo isolation, failed writes, and relaunch.
+It does not test actual speech recognition. Add `--snapshot` to render the real
+SwiftUI workspace to `build/script-library/library-preview.png`.
 
 See [validation notes](VALIDATION.md) for verified behavior and outstanding
 live recording checks.
 
+
+AppKit bitmap previews can omit native glass/sidebar layers. Inspect the actual
+running window when checking appearance; a white region in the bitmap alone
+isn't evidence of a missing control.

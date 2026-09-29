@@ -19,8 +19,10 @@ Mac App Store. The banner above is an illustration of the reading experience.
   are available to download and select in the app.
 - **Makes retakes easier.** Scroll with a trackpad or mouse wheel, jump between
   paragraphs, restart, or click the line you want to read.
-- **Remembers your setup.** Your draft, reading position, model choice, shortcuts,
-  and display settings are saved locally.
+- **Keeps your scripts together.** Save named scripts, search them, and pick up
+  each one where you left off. Deleted scripts stay recoverable in Trash.
+- **Remembers your setup.** Your model choice, shortcuts, and display settings
+  are saved locally.
 
 ## Install
 
@@ -40,8 +42,19 @@ an installer.
 
 ## Set up your first take
 
-Paste a script or import a UTF-8 `.txt` file. You can edit it in the app, export it
-again, or leave it as a saved local draft. Editing pauses playback.
+The default welcome script is already saved in **My Scripts**. Click **+** or
+press **⌘N** to add your own, then paste or type into the editor. Changes save
+automatically. **Import** adds a UTF-8 `.txt` file as a new script; **Export**
+saves the open script as a text file.
+
+Search by script name or any words in its text. Right-click a script to rename,
+duplicate, or move it to Trash. You can also click its title above the editor
+to rename it. **Trash → Restore** brings a deleted script back.
+
+Switching scripts saves your edits, pauses playback, and restores that script's
+reading position. Editing also pauses playback. Use the sidebar button in the
+toolbar to give the editor more room. Word count and estimated reading time
+appear above the editor.
 
 The panel starts with 36-point text, a 460-point width, and three visible lines.
 Adjust the text size, width, visible lines, background opacity, and left/center/right
@@ -140,11 +153,17 @@ No account is required. Recognition runs on your Mac after setup. Teleprompter
 doesn't upload or save microphone audio, and it doesn't request camera access.
 Model downloads need an internet connection.
 
-- Draft and settings: `~/Library/Application Support/Teleprompter/draft.json`
+- Scripts, Trash, reading positions, and settings: `~/Library/Application Support/Teleprompter/library.json`
+- Previous single draft, kept during upgrades: `~/Library/Application Support/Teleprompter/draft.json`
 - Optional models: `~/Library/Application Support/Teleprompter/Models/`
 
-Unreadable drafts are backed up before autosave replaces them. If the backup
-fails, autosave pauses and the app offers export.
+On upgrade, the welcome script becomes the first saved script. Any different
+text from your old draft is kept as **Recovered draft**, and the original draft
+file stays untouched. Your settings carry over.
+
+If a library can't be read, autosave pauses to protect the original file. You
+can still export text from the editor. If a save fails while switching scripts,
+the current script stays open so you don't lose your edits.
 
 ## Build and test
 
@@ -155,6 +174,7 @@ Run Locally**. Xcode resolves the pinned speech-engine packages.
 ```sh
 ./script/build_and_run.sh --verify
 swift test
+./script/check_library_integration.sh
 ```
 
 - [Development guide](docs/DEVELOPMENT.md): source layout, build commands, speech fixtures, and diagnostics.

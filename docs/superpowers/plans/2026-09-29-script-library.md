@@ -32,10 +32,10 @@
 
 **Interfaces:** `SavedScript` contains UUID, title, text, position, dates; `ScriptLibrary` exposes activeScript, matching(query:trashed:), create/select/rename/duplicate/trash/restore. `ScriptLibraryStore.loadOrCreate(defaultText:)` migrates once; `update(_:change:)` commits a candidate before replacing in-memory state.
 
-- [ ] Add tests for default seed/migration, independent positions and relaunch, search, duplicate/rename, Trash/restore/empty state, write failure, unreadable/future data.
-- [ ] Run `swift test --filter ScriptLibraryTests`, observe missing-library compile failure.
-- [ ] Implement value operations and atomic validated storage; preserve legacy draft untouched.
-- [ ] Run focused tests; require all pass. Commit core changes.
+- [x] Add tests for default seed/migration, independent positions and relaunch, search, duplicate/rename, Trash/restore/empty state, write failure, unreadable/future data.
+- [x] Run `swift test --filter ScriptLibraryTests`, observe missing-library compile failure.
+- [x] Implement value operations and atomic validated storage; preserve legacy draft untouched.
+- [x] Run focused tests; require all pass. Commit core changes.
 
 ### Task 2: Editor integration
 
@@ -43,16 +43,16 @@
 
 **Interfaces:** AppModel exposes library actions. Selection saves and stops playback before loading text/position; failed saves block navigation. ScriptEditor resets selection, scroll, and undo on ID change. New/import/duplicate select the created script; restore returns it to My Scripts.
 
-- [ ] Replace single-draft autosave with library transactions and per-script position restoration.
-- [ ] Add collapsible sidebar with title/text search, New, context actions, rename sheet, and recoverable Trash.
-- [ ] Add empty editor state, active title, named exports, and import-as-new; retain existing playback/settings controls.
-- [ ] Build app and verify launch; run full Swift tests once after integration. Inspect selection and undo paths. Commit integration.
+- [x] Replace single-draft autosave with library transactions and per-script position restoration.
+- [x] Add collapsible sidebar with title/text search, New, context actions, rename sheet, and recoverable Trash.
+- [x] Add empty editor state, active title, named exports, and import-as-new; retain existing playback/settings controls.
+- [x] Build app and verify launch; run full Swift tests once after integration. Inspect selection and undo paths. Commit integration.
 
 ### Task 3: Deliver
 
 **Files:** Update `README.md`, `docs/DEVELOPMENT.md`, `docs/VALIDATION.md`, `App/Info.plist`; refine `script/build_and_run.sh` to target only this bundle.
 
-- [ ] Document library, migration, and storage; increment version to 1.1 (build 2).
-- [ ] Review complete diff with one independent reviewer; fix substantive findings and rerun affected checks.
-- [ ] Package/sign/notarize app with existing `script/package_dmg.sh`, verify Gatekeeper and DMG.
-- [ ] Commit, merge into main, push, and publish a private prerelease with DMG/checksum. Verify repository remains private.
+- [x] Document library, migration, and storage; increment version to 1.1 (build 2).
+- [x] Review complete diff with one independent reviewer; fix substantive findings and rerun affected checks.
+- [x] Package/sign/notarize app with existing `script/package_dmg.sh`, verify Gatekeeper and DMG.
+- [x] Commit, merge into main, push, and publish a private prerelease with DMG/checksum. Verify repository remains private.

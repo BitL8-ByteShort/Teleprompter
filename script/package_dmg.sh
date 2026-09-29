@@ -96,7 +96,7 @@ Requires macOS 26 or later and Apple Silicon. Keep the MacBook display open.
 The app inside this disk image is Developer ID signed and notarized by Apple.
 
 Apple Speech is the default voice engine. Optional models download inside the
-app. Your draft and settings stay on this Mac; microphone audio is never saved.
+app. Your scripts and settings stay on this Mac; microphone audio is never saved.
 
 The repository and releases are private:
 https://github.com/BitL8-ByteShort/Teleprompter

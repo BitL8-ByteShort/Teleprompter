@@ -259,3 +259,33 @@ that these remaining checks have passed:
 
 Generated fixture audio and test logs are local-only under `artifacts/` and are
 not included in Git. Build logs are under `build/`.
+
+## 2026-09-29: Local script library (1.1)
+
+- My Scripts sidebar added with search, New, rename, duplicate, recoverable Trash,
+  import as a new script, and named plain-text export. The welcome script is the
+  initial saved selection. Existing settings carry over; the old draft file is
+  retained and distinct text is recovered separately.
+- Nine focused library tests passed, including atomic-write failure, unreadable
+  and future-version protection, empty-library restore, independent positions,
+  migration, and search. Full Swift test run: 57 discovered, 56 passed, one
+  optional real Apple Speech fixture skipped.
+- The integration executable used the real AppModel and NSTextView with temporary
+  storage and silent speech doubles. All 20 assertions passed: save before switch,
+  playback and gesture-resume cancellation, speech-start cancellation, import
+  preservation, editor Undo isolation, failed-save retention, and relaunch.
+- Xcode Debug build succeeded and the exact app bundle launched. The on-disk user
+  library was confirmed to contain the default script; the original draft remains.
+- Actual running app window captured and visually inspected: sidebar, search,
+  New, selected welcome script, Trash, editor, and native sidebar-toggle toolbar
+  rendered correctly. AppKit bitmap previews omit some native glass layers, so
+  those previews were not treated as proof of rendering.
+- One independent code review found no actionable issues. Actual recognition and
+  Cap recording were not repeated for this library change; their earlier limits
+  and remaining practical checks still apply.
+- Release 1.1 (build 2) archived, exported with Salty Panda LLC Developer ID,
+  notarized through the signed-in Xcode account, and stapled. The app mounted
+  from `Teleprompter-1.1-arm64.dmg` passed strict signature verification,
+  stapler validation, and Gatekeeper (`accepted`, `Notarized Developer ID`).
+  The DMG checksum verified; SHA-256:
+  `15a0cca2f06b44376e225d495342ebb940c5b2ed972f864a7d6c499a1a9202df`.
