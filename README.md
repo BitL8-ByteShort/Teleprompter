@@ -38,7 +38,8 @@ On first launch, auto-scroll is selected and playback is stopped. Optional speec
 models download separately; they aren't bundled into the installer.
 
 See [packaging notes](docs/PACKAGING.md) for signing, notarization, and rebuilding
-an installer.
+an installer. The current app is signed by Salty Panda LLC and notarized by Apple;
+see [the release's malware-check evidence](docs/DISTRIBUTION_SECURITY.md).
 
 ## Set up your first take
 
@@ -203,6 +204,9 @@ Contributors keep ownership of their work and explicitly accept the
 [contributor agreement](CLA.md), which permits Salty Panda LLC to use and license
 those contributions in future releases, including commercial releases. The
 repository remains private, so contributors need authorized access.
+
+Only the owner currently has repository access. See [repository access and main
+branch rules](docs/REPOSITORY_ACCESS.md) before inviting contributors.
 
 Third-party code and models retain their own terms. See the
 [third-party notices](THIRD_PARTY_NOTICES.md) for the inventory and full license

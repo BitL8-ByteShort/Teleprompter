@@ -4,6 +4,11 @@ Bug reports, fixes, documentation improvements, and focused feature contribution
 are welcome. Teleprompter is currently a private project, so source contributions
 require repository access. Access is managed by the maintainers.
 
+The owner is currently the only collaborator. Outside write access should wait
+until the prepared main branch rules are enforced; see
+[repository access](docs/REPOSITORY_ACCESS.md). Every contribution needs the
+owner's review and approval.
+
 The app uses a [proprietary license](LICENSE). Accepting contributions doesn't
 make the whole project open source. The [contributor agreement](CLA.md) lets
 you keep ownership of your work while giving Salty Panda LLC permission to
