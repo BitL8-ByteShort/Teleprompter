@@ -67,6 +67,8 @@ Recognition uses Apple's `SpeechAnalyzer` and `SpeechTranscriber`, with English
 (US) as the language. Required speech assets download from Apple when missing;
 recognition runs on device after setup. Microphone audio is never saved by
 Teleprompter. There is no account, cloud transcription, or camera permission.
+Live prompting uses Apple's faster partial results to reduce recognition delay.
+The text still needs a confident nearby match before it moves.
 
 The matcher compares nearby script words, tolerates small omissions, and handles
 revised partial transcripts. It holds during silence, unrelated ad-libs, or
@@ -115,6 +117,15 @@ speech (it may download Apple's English assets):
 mkdir -p artifacts
 say -v Samantha -o artifacts/voice-fixture.caf 'Today we are building a native teleprompter application for recording YouTube videos. Keep your eyes near the camera and speak at your own pace.'
 TELEPROMPTER_SPEECH_FIXTURE="$PWD/artifacts/voice-fixture.caf" swift test
+```
+
+To compare default and fast recognition using the same fixture streamed at
+real-time speed (no microphone or speaker playback):
+
+```sh
+afconvert -f caff -d LEI16@16000 artifacts/voice-fixture.caf artifacts/voice-fixture-16k.caf
+swiftc Core/Script.swift Core/SpeechAlignment.swift script/benchmark_speech.swift -o artifacts/benchmark_speech
+artifacts/benchmark_speech artifacts/voice-fixture-16k.caf
 ```
 
 `Core/` contains the shared timing, matching, placement, and persistence logic.

@@ -13,7 +13,7 @@ func onDeviceTranscriptionFeedsTheRealScriptMatcher() async throws {
     #expect(SpeechTranscriber.isAvailable)
     let supported = await SpeechTranscriber.supportedLocale(equivalentTo: Locale(identifier: "en_US"))
     let locale = try #require(supported)
-    let transcriber = SpeechTranscriber(locale: locale, transcriptionOptions: [], reportingOptions: [.volatileResults], attributeOptions: [.audioTimeRange])
+    let transcriber = SpeechTranscriber(locale: locale, transcriptionOptions: [], reportingOptions: [.volatileResults, .fastResults], attributeOptions: [.audioTimeRange])
     if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
         try await request.downloadAndInstall()
     }

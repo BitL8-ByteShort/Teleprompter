@@ -53,6 +53,31 @@ display plus an external 1080p monitor; Cap Desktop 0.6.0.
   muted; no sound settings were changed. A full visual read-through and the
   practical distance/eye-movement checks remain pending.
 
+## Voice-follow responsiveness
+
+The recognizer previously requested `volatileResults` without `fastResults`.
+That returned revised words in batches several seconds apart, so successful
+alignment alone did not establish a comfortable live reading experience.
+
+`script/benchmark_speech.swift` streams the same generated 7.73-second fixture
+at real-time speed through the on-device recognizer and actual script matcher.
+On this Mac, the comparison measured:
+
+| Configuration | First script advance | Matched words |
+| --- | --- | --- |
+| Partial results only (previous) | 4.05 seconds | 24 / 24 |
+| Partial + fast results (current) | 1.12 seconds | 24 / 24 |
+
+The app now enables both options. Apple's `fastResults` uses a smaller context
+window and trades some recognition accuracy for responsiveness, so confident
+multiword matching and bounded passage search remain in place. See
+[Apple's fast-results documentation](https://developer.apple.com/documentation/speech/speechtranscriber/reportingoption/fastresults).
+
+All 19 tests passed with the faster configuration, including on-device
+transcription and real matcher integration. The signed app was rebuilt and
+relaunched at the saved reading position. These fixture timings describe this
+comparison, not a guaranteed microphone latency or human comfort result.
+
 ## Pending live checks
 
 Microphone access is now granted and the live input starts. No claim is made

@@ -51,7 +51,10 @@ final class SpeechService {
             throw VoiceError.unavailable("English speech recognition is unavailable. Use auto-scroll.")
         }
         try check()
-        let transcriber = SpeechTranscriber(locale: locale, transcriptionOptions: [], reportingOptions: [.volatileResults], attributeOptions: [.audioTimeRange])
+        // Volatile results alone still batch several seconds of speech. Use the
+        // smaller recognition context for live prompting; the script matcher
+        // continues to reject uncertain or distant matches.
+        let transcriber = SpeechTranscriber(locale: locale, transcriptionOptions: [], reportingOptions: [.volatileResults, .fastResults], attributeOptions: [.audioTimeRange])
         if await AssetInventory.status(forModules: [transcriber]) != .installed {
             onStatus?("Downloading English speech model…")
             if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
