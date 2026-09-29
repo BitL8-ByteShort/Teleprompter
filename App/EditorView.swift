@@ -115,6 +115,14 @@ struct EditorView: View {
                     control("Text size", value: "\(Int(model.settings.fontSize)) pt") {
                         Slider(value: setting(\.fontSize), in: 24...64, step: 2).accessibilityLabel("Text size")
                     }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Text alignment").font(.callout)
+                        Picker("Text alignment", selection: setting(\.alignment)) {
+                            Text("Left").tag(ReadingAlignment.left)
+                            Text("Center").tag(ReadingAlignment.center)
+                            Text("Right").tag(ReadingAlignment.right)
+                        }.pickerStyle(.segmented).labelsHidden()
+                    }
                     control("Panel width", value: "\(Int(model.settings.width)) pt") {
                         Slider(value: setting(\.width), in: 320...720, step: 20).accessibilityLabel("Panel width")
                     }

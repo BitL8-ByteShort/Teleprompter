@@ -33,6 +33,8 @@ The local app bundle is `build/Build/Products/Debug/Teleprompter.app`.
   Both modes include a three-second countdown.
 - Start with the default 36-point text, 460-point width, and three visible lines.
   Adjust while sitting or standing at your actual 2–4-foot recording distance.
+- Choose **Left**, **Center**, or **Right** under **Reading Panel → Text alignment**.
+  Changes apply immediately and are remembered between launches.
 - Click a line in the panel to resume there after a countdown. In the editor, place the
   cursor and choose **Read from cursor**. Previous/next paragraph and Restart
   support retakes. Paragraph navigation pauses; press Play to continue.

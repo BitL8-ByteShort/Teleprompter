@@ -67,6 +67,8 @@ struct ReadingPanelView: View {
                 if model.script.tokens.isEmpty || model.playback.state == .finished {
                     Text(model.playback.state == .finished ? "Take complete." : "Paste your script in Teleprompter.")
                         .font(.system(size: model.settings.fontSize, weight: .medium))
+                        .multilineTextAlignment(model.settings.alignment.textAlignment)
+                        .frame(maxWidth: .infinity, alignment: model.settings.alignment.frameAlignment)
                         .padding(.horizontal, 24)
                 } else {
                     // Render only the nearby lines. A long script must not add thousands
@@ -80,7 +82,7 @@ struct ReadingPanelView: View {
                                 .foregroundStyle(line.id == start ? .white : .white.opacity(0.65))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
-                                .frame(maxWidth: .infinity, minHeight: model.lineHeight, maxHeight: model.lineHeight, alignment: .leading)
+                                .frame(maxWidth: .infinity, minHeight: model.lineHeight, maxHeight: model.lineHeight, alignment: model.settings.alignment.frameAlignment)
                                 .contentShape(Rectangle())
                                 .onTapGesture { model.resume(from: line.firstWord) }
                                 .help("Resume reading from this line")
@@ -130,5 +132,23 @@ struct ReadingPanelView: View {
         .onHover { hovered = $0 }
         .preferredColorScheme(.dark)
         .accessibilityLabel("Teleprompter reading panel")
+    }
+}
+
+private extension ReadingAlignment {
+    var frameAlignment: Alignment {
+        switch self {
+        case .left: .leading
+        case .center: .center
+        case .right: .trailing
+        }
+    }
+
+    var textAlignment: TextAlignment {
+        switch self {
+        case .left: .leading
+        case .center: .center
+        case .right: .trailing
+        }
     }
 }

@@ -1,16 +1,38 @@
 import Foundation
 
 enum ScrollMode: String, Codable, CaseIterable, Sendable { case automatic, voice }
+enum ReadingAlignment: String, Codable, CaseIterable, Sendable { case left, center, right }
 
 struct PrompterSettings: Codable, Equatable, Sendable {
     var fontSize: Double = 36
     var width: Double = 460
     var lineCount: Int = 3
     var opacity: Double = 0.94
+    var alignment: ReadingAlignment = .left
     var wpm: Double = 130
     var mode: ScrollMode = .automatic
     var microphoneID: String = ""
     var shortcuts: [String: ShortcutBinding] = ShortcutBinding.defaults
+
+    init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case fontSize, width, lineCount, opacity, alignment, wpm, mode, microphoneID, shortcuts
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        fontSize = try values.decodeIfPresent(Double.self, forKey: .fontSize) ?? 36
+        width = try values.decodeIfPresent(Double.self, forKey: .width) ?? 460
+        lineCount = try values.decodeIfPresent(Int.self, forKey: .lineCount) ?? 3
+        opacity = try values.decodeIfPresent(Double.self, forKey: .opacity) ?? 0.94
+        alignment = try values.decodeIfPresent(ReadingAlignment.self, forKey: .alignment) ?? .left
+        wpm = try values.decodeIfPresent(Double.self, forKey: .wpm) ?? 130
+        mode = try values.decodeIfPresent(ScrollMode.self, forKey: .mode) ?? .automatic
+        microphoneID = try values.decodeIfPresent(String.self, forKey: .microphoneID) ?? ""
+        shortcuts = try values.decodeIfPresent([String: ShortcutBinding].self, forKey: .shortcuts) ?? ShortcutBinding.defaults
+    }
+
     mutating func sanitize() {
         fontSize = fontSize.isFinite ? min(64, max(24, fontSize)) : 36
         width = width.isFinite ? min(720, max(320, width)) : 460
