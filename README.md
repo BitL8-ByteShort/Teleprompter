@@ -190,3 +190,20 @@ SwiftUI and AppKit, Apple's Speech APIs, [MoonshineVoice](https://github.com/moo
 Model sources include [Parakeet Realtime](https://huggingface.co/FluidInference/parakeet-realtime-eou-120m-coreml)
 and [Whisper Core ML](https://huggingface.co/argmaxinc/whisperkit-coreml).
 See the upstream projects and model cards for their respective licenses.
+
+## License and contributions
+
+Teleprompter is maintained by **Salty Panda LLC** under the
+[Teleprompter proprietary license](LICENSE). It permits personal and internal
+business use, including creating monetized videos, and reserves the right to
+license future releases differently.
+
+Contributions are welcome through the [contribution guide](CONTRIBUTING.md).
+Contributors keep ownership of their work and explicitly accept the
+[contributor agreement](CLA.md), which permits Salty Panda LLC to use and license
+those contributions in future releases, including commercial releases. The
+repository remains private, so contributors need authorized access.
+
+Third-party code and models retain their own terms. See the
+[third-party licensing notes](THIRD_PARTY_NOTICES.md) for sources and the
+remaining distribution-notice work.

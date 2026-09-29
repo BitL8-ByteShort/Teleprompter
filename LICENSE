@@ -1,0 +1,73 @@
+Teleprompter License
+Version 1.0, September 29, 2026
+
+Copyright (c) 2026 Salty Panda LLC.
+All rights reserved except for the permissions expressly granted below.
+Contributors retain ownership of their original contributions; Salty Panda LLC
+uses those contributions under the applicable contributor agreement.
+
+1. Scope
+
+These terms cover the Teleprompter code, documentation, and other materials
+owned by or licensed to Salty Panda LLC in this repository (the Software).
+They do not replace the separate licenses covering third-party libraries,
+models, or other separately identified materials. Those licenses control those
+materials, including any rights they grant that are broader than these terms.
+This is a proprietary license, not an open-source license.
+
+2. Permission to use this release
+
+If you lawfully receive the Software, Salty Panda LLC permits you to install,
+run, and make backup copies of this release for your own personal use or your
+organization's internal use. This includes using Teleprompter to create
+commercial or monetized videos. No license fee is required under these terms.
+Your scripts, recordings, and other content remain yours; this license grants
+Salty Panda LLC no rights in that content.
+
+3. Source access and contributions
+
+If you lawfully receive the source, you may inspect, build, and modify it for
+those same uses, for testing and evaluation, and to prepare contributions to
+Teleprompter. You may share proposed changes with the project's authorized
+maintainers and collaborators through its approved contribution channels.
+Keep copyright, license, and attribution notices with copies.
+
+Repository access does not by itself authorize disclosure of private source.
+Permissions separately granted by the repository host's applicable terms are
+not limited by this license. Contributions are accepted only under the process
+in CONTRIBUTING.md and the separately accepted agreement in CLA.md. Reading
+the source or using the app does not constitute acceptance of that agreement.
+
+4. Reserved rights
+
+Except as allowed above, by a third-party license, or by applicable law, you
+may not redistribute or sublicense the Software, publish modified versions,
+sell or rent copies, or provide the Software as a hosted service without
+written permission from Salty Panda LLC. No rights to use project names,
+logos, or trademarks to imply endorsement are granted. Rights not expressly
+granted remain with their respective owners.
+
+5. Future releases
+
+Salty Panda LLC may distribute future releases or features under different
+terms, including commercial terms. This license does not set a price, require
+a purchase, or promise access to future releases, features, support, or updates.
+A later licensing change does not retroactively change the permissions granted
+for this release to recipients who continue to comply with these terms.
+
+6. Ending these permissions
+
+A material breach of these terms ends the permissions granted to you if it is
+not corrected within 30 days after written notice from Salty Panda LLC. If your
+permissions end, stop using and remove the affected Software. This does not
+terminate rights you hold separately under third-party licenses or applicable
+law, or revoke rights you granted under an accepted contributor agreement.
+
+7. Warranty and liability
+
+To the extent permitted by applicable law, the Software is supplied without
+warranties or guarantees, including guarantees of quality, suitability,
+availability, accuracy, or non-infringement. To that same extent, Salty Panda
+LLC and contributors are not responsible for losses or damages arising from
+use of, or inability to use, the Software. Nothing here excludes rights or
+liabilities that applicable law does not allow the parties to exclude.
