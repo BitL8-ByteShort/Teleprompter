@@ -28,14 +28,29 @@ struct ScriptEditor: NSViewRepresentable {
         return scroll
     }
     func updateNSView(_ scroll: NSScrollView, context: Context) {
-        guard let text = scroll.documentView as? NSTextView, text.string != model.text else { return }
-        let selection = text.selectedRange()
-        text.string = model.text
-        text.setSelectedRange(NSRange(location: min(selection.location, (model.text as NSString).length), length: 0))
+        guard let text = scroll.documentView as? NSTextView else { return }
+        if context.coordinator.scriptID != model.library.activeID {
+            context.coordinator.scriptID = model.library.activeID
+            // Undo from the previous script must never replace this script's contents.
+            text.undoManager?.removeAllActions()
+            text.string = model.text
+            text.setSelectedRange(NSRange(location: 0, length: 0))
+            text.scrollToBeginningOfDocument(nil)
+        } else if text.string != model.text {
+            let selection = text.selectedRange()
+            text.string = model.text
+            text.setSelectedRange(NSRange(location: min(selection.location, (model.text as NSString).length), length: 0))
+        }
+    }
+    static func dismantleNSView(_ scroll: NSScrollView, coordinator: Coordinator) {
+        guard let text = scroll.documentView as? NSTextView else { return }
+        text.undoManager?.removeAllActions()
+        text.delegate = nil
     }
     @MainActor final class Coordinator: NSObject, NSTextViewDelegate {
         let model: AppModel
-        init(model: AppModel) { self.model = model }
+        var scriptID: UUID?
+        init(model: AppModel) { self.model = model; scriptID = model.library.activeID }
         func textDidChange(_ notification: Notification) {
             if let text = notification.object as? NSTextView { model.edit(text.string) }
         }

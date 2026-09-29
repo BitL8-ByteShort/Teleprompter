@@ -7,9 +7,12 @@ struct TeleprompterApp: App {
         Window("Teleprompter", id: "editor") {
             RootView(delegate: delegate)
         }
-        .defaultSize(width: 1000, height: 760)
+        .defaultSize(width: 1230, height: 760)
         .windowResizability(.contentMinSize)
         .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("New Script") { delegate.model.newScript() }.keyboardShortcut("n")
+            }
             CommandGroup(after: .newItem) {
                 Button("Show / Hide Prompter") { delegate.model.toggleOverlay() }
                 Button("Play / Pause") { delegate.model.togglePlayback() }
@@ -23,7 +26,7 @@ private struct RootView: View {
     let delegate: AppDelegate
     @Environment(\.openWindow) private var openWindow
     var body: some View {
-        EditorView(model: delegate.model)
+        ScriptWorkspaceView(model: delegate.model)
             .onAppear {
                 delegate.openEditor = {
                     openWindow(id: "editor")

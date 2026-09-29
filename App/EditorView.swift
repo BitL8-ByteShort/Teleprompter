@@ -24,17 +24,32 @@ struct EditorView: View {
             HSplitView {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
-                        Label("SCRIPT", systemImage: "doc.text").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        if let current = model.activeSavedScript {
+                            Button { model.scriptToRename = current } label: {
+                                Label(current.title, systemImage: "doc.text").lineLimit(1)
+                            }.buttonStyle(.plain).font(.headline).help("Rename script")
+                        } else { Text("No script selected").font(.headline) }
                         Spacer()
                         Text("\(model.script.tokens.count) words · ~\(model.estimatedMinutes) min").font(.caption).foregroundStyle(.secondary)
                     }
-                    ScriptEditor(model: model)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay { RoundedRectangle(cornerRadius: 12).strokeBorder(.quaternary) }
+                    if model.activeSavedScript != nil {
+                        ScriptEditor(model: model)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay { RoundedRectangle(cornerRadius: 12).strokeBorder(.quaternary) }
+                    } else {
+                        ContentUnavailableView {
+                            Label("Ready for a new script", systemImage: "doc.badge.plus")
+                        } description: {
+                            Text("Create a script, import a text file, or restore one from Trash.")
+                        } actions: {
+                            Button("New script") { model.newScript() }
+                        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                     HStack {
                         Text(model.saveStatus).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                         Spacer()
                         Button("Read from cursor", systemImage: "text.cursor") { model.readFromSelection() }
+                            .disabled(model.script.tokens.isEmpty)
                             .help("Place the cursor in your script, then resume there using your countdown setting")
                     }
                 }.padding(24).frame(minWidth: 430)
@@ -61,7 +76,7 @@ struct EditorView: View {
         .toolbar {
             ToolbarItemGroup {
                 Button("Import", systemImage: "square.and.arrow.down") { importScript() }
-                Button("Export", systemImage: "square.and.arrow.up") { exportScript() }
+                Button("Export", systemImage: "square.and.arrow.up") { exportScript() }.disabled(model.activeSavedScript == nil)
                 Button(model.overlayVisible ? "Hide prompter" : "Show prompter", systemImage: model.overlayVisible ? "eye" : "eye.slash") { model.toggleOverlay() }
                 Button("Recording setup", systemImage: "video.badge.checkmark") { showSetup = true }
             }
@@ -214,13 +229,13 @@ struct EditorView: View {
         panel.allowedContentTypes = [.plainText]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        do { model.edit(try String(contentsOf: url, encoding: .utf8)); model.restart() }
+        do { model.importScript(text: try String(contentsOf: url, encoding: .utf8), title: url.deletingPathExtension().lastPathComponent) }
         catch { model.errorMessage = "Could not read that text file: \(error.localizedDescription)" }
     }
     private func exportScript() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.plainText]
-        panel.nameFieldStringValue = "YouTube Script.txt"
+        panel.nameFieldStringValue = (model.activeSavedScript?.title ?? "YouTube Script").replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-") + ".txt"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do { try model.text.write(to: url, atomically: true, encoding: .utf8) }
         catch { model.errorMessage = "Could not export the script: \(error.localizedDescription)" }

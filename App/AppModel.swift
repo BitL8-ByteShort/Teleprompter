@@ -5,6 +5,9 @@ import OSLog
 @MainActor @Observable
 final class AppModel {
     var text: String
+    var library: ScriptLibrary
+    var libraryError: String?
+    var scriptToRename: SavedScript?
     var settings: PrompterSettings
     var script: Script
     var layout: ReadingLayout
@@ -34,40 +37,29 @@ final class AppModel {
     @ObservationIgnored private var alignment = SpeechAlignment()
     @ObservationIgnored private var voiceScroll = VoiceScroll()
     @ObservationIgnored private let speech = SpeechService()
-    @ObservationIgnored private let store: DraftStore
+    @ObservationIgnored private let store: ScriptLibraryStore
     @ObservationIgnored private var lastSave: Double = 0
     @ObservationIgnored private var generation = 0
-    @ObservationIgnored private var protectUnreadableDraft = false
+    @ObservationIgnored private var protectUnreadableLibrary = false
     @ObservationIgnored private let log = Logger(subsystem: "com.bitl8byteshort.Teleprompter", category: "Playback")
 
-    init() {
-        let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Teleprompter")
-        store = DraftStore(url: folder.appendingPathComponent("draft.json"))
-        var restored: SavedDraft?
-        var recoveryError: String?
-        var protectDraft = false
-        do { restored = try store.load() }
+    init(storageFolder: URL? = nil) {
+        let folder = storageFolder ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Teleprompter")
+        store = ScriptLibraryStore(folder: folder)
+        var restored = ScriptLibrary(defaultText: Self.welcomeScript)
+        do { restored = try store.loadOrCreate(defaultText: Self.welcomeScript) }
         catch {
-            // Preserve an unreadable draft before future autosaves replace it.
-            let backup = folder.appendingPathComponent("draft-unreadable-\(Int(Date().timeIntervalSince1970)).json")
-            do { try FileManager.default.copyItem(at: store.url, to: backup) }
-            catch {
-                protectDraft = true
-                recoveryError = "Your saved draft could not be read or backed up. Export any edits before quitting, and check \(folder.path)."
-            }
-            if recoveryError == nil { recoveryError = "Your saved draft could not be read. A copy was kept at \(backup.path)." }
+            protectUnreadableLibrary = true
+            libraryError = "Your saved scripts could not be opened. The original files are untouched. Export any edits before quitting. \(error.localizedDescription)"
         }
-        let initialText = restored?.text ?? Self.welcomeScript
-        let initialSettings = restored?.settings ?? PrompterSettings()
-        let initialScript = Script(initialText)
+        library = restored
+        let initialText = restored.activeScript?.text ?? ""
         text = initialText
-        settings = initialSettings
+        settings = restored.settings
+        let initialScript = Script(initialText)
         script = initialScript
-        layout = ReadingLayout(script: initialScript, fontSize: initialSettings.fontSize, width: initialSettings.width - 48)
-        playback.position = min(Double(script.tokens.count), restored?.position ?? 0)
-        if playback.position >= Double(script.tokens.count) { playback.position = 0 }
-        errorMessage = recoveryError
-        protectUnreadableDraft = protectDraft
+        layout = ReadingLayout(script: initialScript, fontSize: restored.settings.fontSize, width: restored.settings.width - 48)
+        playback.position = restored.activeScript?.position ?? 0
         syncReadingOffset()
         speech.onResult = { [weak self] text, segment, final in self?.receive(text, segment: segment, final: final) }
         speech.onLevel = { [weak self] level in self?.microphoneLevel = level }
@@ -169,7 +161,7 @@ final class AppModel {
         }
     }
 
-    func pause() {
+    @discardableResult func pause() -> Bool {
         manualScroll.cancel()
         generation += 1
         startTask?.cancel(); startTask = nil
@@ -178,7 +170,7 @@ final class AppModel {
         speech.stop()
         microphoneLevel = 0
         speechStatus = "Microphone off"
-        save()
+        return save()
     }
 
     func seek(_ word: Int) {
@@ -292,12 +284,63 @@ final class AppModel {
             self?.save()
         }
     }
-    func save() {
-        guard !protectUnreadableDraft else { saveStatus = "Autosave paused to protect unreadable draft. Export your edits."; return }
+    @discardableResult func save() -> Bool {
+        guard !protectUnreadableLibrary else {
+            saveStatus = "Autosave paused to protect your saved scripts. Export your edits."
+            return false
+        }
+        let currentText = text
+        let position = playback.position
+        let currentSettings = settings
         do {
-            try store.save(.init(text: text, settings: settings, position: playback.position))
+            try store.update(&library) {
+                $0.updateActive(text: currentText, position: position)
+                $0.settings = currentSettings
+            }
             saveStatus = "Saved on this Mac"
-        } catch { saveStatus = "Could not save: \(error.localizedDescription)" }
+            return true
+        } catch {
+            saveStatus = "Could not save: \(error.localizedDescription)"
+            return false
+        }
+    }
+
+    var activeSavedScript: SavedScript? { library.activeScript }
+
+    func selectScript(_ id: UUID) {
+        guard id != library.activeID else { return }
+        changeLibrary { $0.select(id) }
+    }
+    func newScript() { changeLibrary { $0.create() } }
+    func importScript(text: String, title: String) { changeLibrary { $0.create(title: title, text: text) } }
+    func renameScript(_ id: UUID, title: String) { changeLibrary { $0.rename(id, title: title) } }
+    func duplicateScript(_ id: UUID) { changeLibrary { $0.duplicate(id) } }
+    func trashScript(_ id: UUID) { changeLibrary { $0.trash(id) } }
+    func restoreScript(_ id: UUID) { changeLibrary { $0.restore(id) } }
+
+    private func changeLibrary(_ change: (inout ScriptLibrary) -> Void) {
+        saveTask?.cancel()
+        // Pause also cancels manual-scroll resume and invalidates in-flight speech.
+        guard pause() else {
+            libraryError = "Your current script could not be saved, so it is still open. \(saveStatus)"
+            return
+        }
+        let previousID = library.activeID
+        do {
+            try store.update(&library, change: change)
+            if previousID != library.activeID {
+                text = library.activeScript?.text ?? ""
+                script = Script(text)
+                playback = Playback()
+                playback.seek(library.activeScript?.position ?? 0, wordCount: script.tokens.count)
+                selection = NSRange(location: 0, length: 0)
+                alignment.reset()
+                rebuildLayout()
+                overlayChanged?()
+            }
+        } catch {
+            libraryError = "That change could not be saved. Your current script is still open. \(error.localizedDescription)"
+        }
     }
     func shutdown() { downloadTask?.cancel(); pause(); speech.releaseModel(); saveTask?.cancel(); save(); timer?.invalidate() }
 
