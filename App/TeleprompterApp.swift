@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct TeleprompterApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    @Environment(\.openWindow) private var openWindow
     var body: some Scene {
         Window("Teleprompter", id: "editor") {
             RootView(delegate: delegate)
@@ -18,7 +19,14 @@ struct TeleprompterApp: App {
                 Button("Play / Pause") { delegate.model.togglePlayback() }
                 Button("Restart Script") { delegate.model.restart() }
             }
+            CommandGroup(after: .help) {
+                Button("Licenses & Credits") { openWindow(id: "licenses") }
+            }
         }
+        Window("Licenses & Credits", id: "licenses") {
+            LicensesView()
+        }
+        .defaultSize(width: 760, height: 600)
     }
 }
 

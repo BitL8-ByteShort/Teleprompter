@@ -28,10 +28,15 @@ for folder in ['App', 'Core', 'Speech']:
             build_files.append(add('build:' + str(file.relative_to(ROOT)), f'isa = PBXBuildFile; fileRef = {ref};'))
     groups.append(add(folder, f'isa = PBXGroup; children = ({",".join(children)},); path = {folder}; sourceTree = "<group>";'))
 product = add('product', 'isa = PBXFileReference; explicitFileType = wrapper.application; path = Teleprompter.app; sourceTree = BUILT_PRODUCTS_DIR;')
+resource_builds = []
+for path, kind in [('Core/Licenses', 'folder'), ('LICENSE', 'text'), ('THIRD_PARTY_NOTICES.md', 'text')]:
+    ref = add('resource:' + path, f'isa = PBXFileReference; lastKnownFileType = {kind}; path = {quoted(path)}; sourceTree = "<group>";')
+    groups.append(ref)
+    resource_builds.append(add('resource-build:' + path, f'isa = PBXBuildFile; fileRef = {ref};'))
 products = add('products', f'isa = PBXGroup; children = ({product},); name = Products; sourceTree = "<group>";')
 main = add('main', f'isa = PBXGroup; children = ({",".join(groups + [products])},); sourceTree = "<group>";')
 source_phase = add('sources', f'isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ({",".join(build_files)},); runOnlyForDeploymentPostprocessing = 0;')
-resources = add('resources', 'isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;')
+resources = add('resources', f'isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ({",".join(resource_builds)},); runOnlyForDeploymentPostprocessing = 0;')
 package_refs = []
 package_products = []
 package_builds = []

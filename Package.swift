@@ -11,7 +11,7 @@ let package = Package(
         .package(url: "https://github.com/argmaxinc/argmax-oss-swift.git", exact: "1.1.0")
     ],
     targets: [
-        .target(name: "TeleprompterCore", path: "Core"),
+        .target(name: "TeleprompterCore", path: "Core", resources: [.copy("Licenses")]),
         .target(name: "TeleprompterSpeech", dependencies: [
             "TeleprompterCore",
             .product(name: "MoonshineVoice", package: "moonshine-swift"),

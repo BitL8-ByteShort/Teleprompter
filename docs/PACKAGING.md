@@ -1,7 +1,7 @@
 # Packaging Teleprompter
 
 The installer is a compressed `.dmg` containing `Teleprompter.app`, an
-Applications shortcut, and short install instructions. The app inside is signed
+Applications shortcut, short install instructions, and full license documents. The app inside is signed
 with **Developer ID Application: Salty Panda LLC** and notarized by Apple.
 The repository and its releases remain private.
 
@@ -35,8 +35,8 @@ No private key or Apple password is stored in the repository.
 
 Outputs:
 
-- `dist/Teleprompter-1.0-arm64.dmg`
-- `dist/Teleprompter-1.0-arm64.dmg.sha256`
+- `dist/Teleprompter-1.1.1-arm64.dmg`
+- `dist/Teleprompter-1.1.1-arm64.dmg.sha256`
 - Build, export, and notarization logs under `build/packaging/`
 
 The filename follows the version in `App/Info.plist`. Generated installers,
@@ -51,6 +51,25 @@ To package an app that is already signed, notarized, and stapled:
 
 The same validation gates run before packaging. A development-signed app or one
 without a valid notarization ticket won't pass.
+
+## License documents
+
+`Core/Licenses/` contains the full third-party texts and a manifest with source
+URLs, dependency revisions, and checksums. The app includes that folder, the
+project's `LICENSE`, and `THIRD_PARTY_NOTICES.md` as signed resources. The same
+documents are copied beside the app on the disk image.
+
+Packaging checks dependency pins against the inventory and verifies every
+document in the exported app before creating the installer:
+
+```sh
+python3 script/verify_licenses.py
+python3 script/verify_licenses.py --bundle build/packaging/export/Teleprompter.app
+```
+
+Update the inventory and license documents when changing dependency versions.
+Optional model downloads receive their own terms before downloading weights;
+models installed by earlier releases receive those documents when first used.
 
 ## If notarization hasn't finished
 

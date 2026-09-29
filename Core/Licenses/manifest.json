@@ -1,0 +1,472 @@
+{
+  "schemaVersion": 1,
+  "collectedOn": "2026-09-29",
+  "packages": {
+    "argmax-oss-swift": {
+      "revision": "1e2a163736dfa5a198e637ae44c114e1c6d5cc2d",
+      "version": "1.1.0"
+    },
+    "fluidaudio": {
+      "revision": "21493f8dac5a97e65742e6ff26f42f164c2fda0f",
+      "version": "0.17.4"
+    },
+    "moonshine-swift": {
+      "revision": "45a14f9edf1f2a6913d3aff38c1fd4e72d5b7daa",
+      "version": "0.1.5"
+    },
+    "swift-argument-parser": {
+      "revision": "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+      "version": "1.8.2"
+    }
+  },
+  "binaryArtifacts": {
+    "Moonshine": "6bc7fb4b6d3a470a2ae2d681299975f3ba9d710753786d1cd7e8beabaad066e8",
+    "NemoTextProcessing": "5fa8c10d4ec26c1bb2413125f351a7222a4c68a23b74476680fbada7e26fc6aa"
+  },
+  "files": [
+    {
+      "path": "Argmax/LICENSE.txt",
+      "sha256": "b8673adf319f1d6905c5c38cf69513f8857930fb3445566fa9839c6948bb85c4",
+      "source": "https://github.com/argmaxinc/argmax-oss-swift/blob/1e2a163736dfa5a198e637ae44c114e1c6d5cc2d/LICENSE"
+    },
+    {
+      "path": "Argmax/NOTICES.txt",
+      "sha256": "8af554e910833382a04c73b2d9eaef669e031335c867de14b5cf631bd2239913",
+      "source": "https://github.com/argmaxinc/argmax-oss-swift/blob/1e2a163736dfa5a198e637ae44c114e1c6d5cc2d/NOTICES"
+    },
+    {
+      "path": "FluidAudio/JapaneseG2P-LICENSE.md",
+      "sha256": "cb82031f608b056ffb378073d15fd840e070a1dd3063f8975556f9536d447103",
+      "source": "https://github.com/FluidInference/FluidAudio/blob/21493f8dac5a97e65742e6ff26f42f164c2fda0f/ThirdPartyLicenses/JapaneseG2P-LICENSE.md"
+    },
+    {
+      "path": "FluidAudio/KokoroAneSpanishFrenchG2P-LICENSE.md",
+      "sha256": "82b80894661fb61209fc39f91bb50b2ed5d0c8628f9d1460ccc853b8bcf12043",
+      "source": "https://github.com/FluidInference/FluidAudio/blob/21493f8dac5a97e65742e6ff26f42f164c2fda0f/ThirdPartyLicenses/KokoroAneSpanishFrenchG2P-LICENSE.md"
+    },
+    {
+      "path": "FluidAudio/LICENSE.txt",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "source": "https://github.com/FluidInference/FluidAudio/blob/21493f8dac5a97e65742e6ff26f42f164c2fda0f/LICENSE"
+    },
+    {
+      "path": "FluidAudio/NemoTextProcessing-LICENSE.md",
+      "sha256": "300a31d86c7c5d809f0adc00ef7d35259226acc7e412b9767cd3029a3395c50e",
+      "source": "https://github.com/FluidInference/FluidAudio/blob/21493f8dac5a97e65742e6ff26f42f164c2fda0f/ThirdPartyLicenses/NemoTextProcessing-LICENSE.md"
+    },
+    {
+      "path": "FluidAudio/fastcluster-LICENSE.md",
+      "sha256": "67594dbe4a7477719c8160373e7767c2c319ef966a6042f76846a18af02cde0a",
+      "source": "https://github.com/FluidInference/FluidAudio/blob/21493f8dac5a97e65742e6ff26f42f164c2fda0f/ThirdPartyLicenses/fastcluster-LICENSE.md"
+    },
+    {
+      "path": "FluidAudio/vbx-LICENSE.md",
+      "sha256": "08e57fdb5187c816e937916f1e176aadb400ca76f4b3b493d69730ec8f10dd80",
+      "source": "https://github.com/FluidInference/FluidAudio/blob/21493f8dac5a97e65742e6ff26f42f164c2fda0f/ThirdPartyLicenses/vbx-LICENSE.md"
+    },
+    {
+      "path": "Models/Moonshine/LICENSE.txt",
+      "sha256": "fa7d1174dd8af6a7cd280be20b80d10095ed4c19b5b20b61a7715c3ad790dc5f",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/LICENSE",
+      "note": "English Small Streaming is covered by Section 1 MIT; Section 2 is retained verbatim but applies only to enumerated legacy non-English models"
+    },
+    {
+      "path": "Models/Parakeet/Model-Card.md",
+      "sha256": "aa118bc396f4bf5a0e5801761c1b2eafa584683492605b4f945cf57427b1fb49",
+      "source": "https://huggingface.co/FluidInference/parakeet-realtime-eou-120m-coreml/raw/40a23f4c0b333aa17ad8c0f2ea47ec2347f2f355/README.md"
+    },
+    {
+      "path": "Models/Parakeet/NVIDIA-Open-Model-License.pdf",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "source": "https://www.nvidia.com/content/dam/en-zz/Solutions/license-agreements/enterprise-software/nvidia-open-model-license-agreements-24-10-2025.pdf"
+    },
+    {
+      "path": "Models/Parakeet/NVIDIA-Open-Model-License.txt",
+      "sha256": "c111f40c9b35d8cf9dbefb0e2bde69444a56131b27614dfa611da0b55246d7e1",
+      "source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+      "generated": true,
+      "note": "Text extracted from the unmodified official agreement PDF"
+    },
+    {
+      "path": "Models/Parakeet/NVIDIA-Trustworthy-AI.txt",
+      "sha256": "2ddf987a54171e18a0dbf369da5e4e1f6c8df36726111f8837d9b621a685d776",
+      "source": "https://www.nvidia.com/en-us/agreements/trustworthy-ai/terms/",
+      "generated": true,
+      "note": "Official incorporated terms; page body retained without navigation or style markup"
+    },
+    {
+      "path": "Models/Parakeet/Notice.txt",
+      "sha256": "5fc60716a9ba57f3792e71ed776b4065671c64d0c2db716698f4d646ad833eb1",
+      "source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+      "generated": true
+    },
+    {
+      "path": "Models/Whisper/Argmax-MIT.txt",
+      "sha256": "b8673adf319f1d6905c5c38cf69513f8857930fb3445566fa9839c6948bb85c4",
+      "source": "https://huggingface.co/argmaxinc/whisperkit-coreml",
+      "note": "MIT metadata; Argmax copyright and MIT text from pinned Argmax OSS release"
+    },
+    {
+      "path": "Models/Whisper/OpenAI-MIT.txt",
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "source": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/LICENSE"
+    },
+    {
+      "path": "Moonshine/Eigen-Source-Availability.txt",
+      "sha256": "8548f6ac9f59ef1850bbc1e1fab2371c8faa17edfbc2f219ebb61584997e0ac4",
+      "source": "https://github.com/moonshine-ai/moonshine/tree/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/Eigen",
+      "generated": true
+    },
+    {
+      "path": "Moonshine/LICENSE.txt",
+      "sha256": "fa7d1174dd8af6a7cd280be20b80d10095ed4c19b5b20b61a7715c3ad790dc5f",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/LICENSE"
+    },
+    {
+      "path": "Moonshine/ONNXRuntime-ThirdPartyNotices.txt",
+      "sha256": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc",
+      "source": "https://raw.githubusercontent.com/microsoft/onnxruntime/be835efc56aca19b8e810538ec93c8e150e0fc61/ThirdPartyNotices.txt"
+    },
+    {
+      "path": "Moonshine/Scope.md",
+      "sha256": "082542e55e7d8556182dedfbdc7df936792ba8d3ef57821fc68dcd371de4312a",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/docs/license.md"
+    },
+    {
+      "path": "Moonshine/cpp-annote/LICENSE",
+      "sha256": "70b76093f6fb38e8d76e5cf0045ce4c3ae12f7f93b81f143ad6b389eaf9e0e16",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/cpp-annote/LICENSE"
+    },
+    {
+      "path": "Moonshine/third-party/Eigen/COPYING.MPL2",
+      "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/Eigen/COPYING.MPL2"
+    },
+    {
+      "path": "Moonshine/third-party/doctest/LICENSE.txt",
+      "sha256": "0fe0b331fa1513dcce8604ff1fa925f32d1cea17d8aeb1c2471fad40d291adc5",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/doctest/LICENSE.txt"
+    },
+    {
+      "path": "Moonshine/third-party/kaldi-native-fbank/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/kaldi-native-fbank/LICENSE"
+    },
+    {
+      "path": "Moonshine/third-party/kissfft/BSD-3-Clause.txt",
+      "sha256": "4d6bcab46f27d6d0c878e8305d4bdcfe040d52bf6656b9771f04c9fb9902c0ed",
+      "source": "https://raw.githubusercontent.com/mborgerding/kissfft/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec/LICENSES/BSD-3-Clause"
+    },
+    {
+      "path": "Moonshine/third-party/kissfft/COPYING",
+      "sha256": "a2840585f8411be8e6826a31ef15ae65c950bd74a2437a73b013398a934ad0c6",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/kissfft/COPYING"
+    },
+    {
+      "path": "Moonshine/third-party/nlohmann/LICENSE.MIT",
+      "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/nlohmann/LICENSE.MIT"
+    },
+    {
+      "path": "Moonshine/third-party/onnxruntime/LICENSE.txt",
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/onnxruntime/LICENSE.txt"
+    },
+    {
+      "path": "Moonshine/third-party/utf-8/LICENSE.txt",
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/utf-8/LICENSE.txt"
+    },
+    {
+      "path": "Moonshine/third-party/utf8proc/LICENSE.md",
+      "sha256": "3b510150d34f248a221bb88e1d811238d6c6c18b51231822c42974c39bb07256",
+      "source": "https://raw.githubusercontent.com/moonshine-ai/moonshine/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/utf8proc/LICENSE.md"
+    },
+    {
+      "path": "NemoTextProcessing/LICENSE.txt",
+      "sha256": "ac84752611bfcb8e2f472b17f9cb18f5321c9a75c2a5445b766725b1de67790b",
+      "source": "https://raw.githubusercontent.com/FluidInference/text-processing-rs/46ebddcea5e1ff673c2cb5256a1b6b0e6c4ff527/LICENSE"
+    },
+    {
+      "path": "NemoTextProcessing/NOTICE.txt",
+      "sha256": "886143044515319a91f4447f9b447bb89089b4c9af847300f4b8de830c805852",
+      "source": "https://raw.githubusercontent.com/FluidInference/text-processing-rs/46ebddcea5e1ff673c2cb5256a1b6b0e6c4ff527/NOTICE"
+    },
+    {
+      "path": "NemoTextProcessing/NVIDIA-NeMo-LICENSE.txt",
+      "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+      "source": "https://raw.githubusercontent.com/NVIDIA/NeMo-text-processing/1f1263579fe57ba7ed783cad3dddee710fcc5064/LICENSE"
+    },
+    {
+      "path": "NemoTextProcessing/Rust/COPYRIGHT.txt",
+      "sha256": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af",
+      "source": "https://raw.githubusercontent.com/rust-lang/rust/1.91.1/COPYRIGHT"
+    },
+    {
+      "path": "NemoTextProcessing/Rust/LICENSE-APACHE.txt",
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "source": "https://raw.githubusercontent.com/rust-lang/rust/1.91.1/LICENSE-APACHE"
+    },
+    {
+      "path": "NemoTextProcessing/Rust/LICENSE-MIT.txt",
+      "sha256": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1",
+      "source": "https://raw.githubusercontent.com/rust-lang/rust/1.91.1/LICENSE-MIT"
+    },
+    {
+      "path": "NemoTextProcessing/Rust/adler2-2.0.1.txt",
+      "sha256": "dcf2f741910742ac0f3e6fdeb1f243a2ecafec460259cd495d3bce1b10b61c3f",
+      "source": "https://static.crates.io/crates/adler2/adler2-2.0.1.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/anyhow-1.0.103.txt",
+      "sha256": "d67be888b642d3e6038eb2b8bec088d0a14533fc2fa2d5336dabad54a3b911ef",
+      "source": "https://static.crates.io/crates/anyhow/anyhow-1.0.103.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/autocfg-1.5.1.txt",
+      "sha256": "ba5a88b3c9f58580e7122412f39cdc691b5c2218172aac60a24c9f3b8d1e3310",
+      "source": "https://static.crates.io/crates/autocfg/autocfg-1.5.1.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/bimap-0.6.3.txt",
+      "sha256": "256b327817c72888ac47baa9229d4ff7ed0f303309978563cefc2c41c3bd374a",
+      "source": "https://static.crates.io/crates/bimap/bimap-0.6.3.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/bitflags-2.13.0.txt",
+      "sha256": "2ba4dea4baed40fd01a30938cd9954d8aa1a5c1ced7be2f495615b2845510bab",
+      "source": "https://static.crates.io/crates/bitflags/bitflags-2.13.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/cfg-if-1.0.4.txt",
+      "sha256": "ecd7edcc10a6f613a3794fae86f5d038cece1a3ce66951e668725f3dc7564fe0",
+      "source": "https://static.crates.io/crates/cfg-if/cfg-if-1.0.4.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/crc32fast-1.5.0.txt",
+      "sha256": "40cfee5ee0d3409ce2a469ed1317046f2db1efbcce2351982bbe587af801cd98",
+      "source": "https://static.crates.io/crates/crc32fast/crc32fast-1.5.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/either-1.16.0.txt",
+      "sha256": "66257fb15586765f717c2ca1f2bbdd4269678180e52163e90dc9b71dd3e971fe",
+      "source": "https://static.crates.io/crates/either/either-1.16.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/flate2-1.1.9.txt",
+      "sha256": "84686cc46753f27361d9b4a8f47f343d8a1665959e0589f09e6b8aaaad689da6",
+      "source": "https://static.crates.io/crates/flate2/flate2-1.1.9.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/generic-array-1.4.3.txt",
+      "sha256": "4988efaf7d245aee9af2b74c00e7c0410afeaab321dae37c1a6c759220f42a16",
+      "source": "https://static.crates.io/crates/generic-array/generic-array-1.4.3.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/getrandom-0.3.4.txt",
+      "sha256": "f69c208e9ada03d14384a4e4bf4bb3dafd56ea91359c45a1c9350462807a2a5d",
+      "source": "https://static.crates.io/crates/getrandom/getrandom-0.3.4.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/getrandom-0.4.3.txt",
+      "sha256": "2c08074f0ed73905f2e127daa3b07b27cba394ac5165ba0536b38d4909ac0f19",
+      "source": "https://static.crates.io/crates/getrandom/getrandom-0.4.3.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/itertools-0.14.0.txt",
+      "sha256": "57d2a58ecb4cc27df5cf5828710b533e1856ebe6d12e8b0f627fc7e14dc9486f",
+      "source": "https://static.crates.io/crates/itertools/itertools-0.14.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/lazy_static-1.5.0.txt",
+      "sha256": "9202f9a75546c75cbe0bb714e5d81014e306cd92fb149199babe201f5c7647fe",
+      "source": "https://static.crates.io/crates/lazy_static/lazy_static-1.5.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/libc-0.2.186.txt",
+      "sha256": "2721b7247d7b9f4803d965d8068ac2176516e2c5dee6cbe18e402385371c0c95",
+      "source": "https://static.crates.io/crates/libc/libc-0.2.186.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/memchr-2.8.3.txt",
+      "sha256": "7c196610d6166759a959edff8699e8b1f47104f2a7c74fde85aa0864d2bb10cd",
+      "source": "https://static.crates.io/crates/memchr/memchr-2.8.3.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/minimal-lexical-0.2.1.txt",
+      "sha256": "a5d80aa37a47ddd1d1deade5fa248b411715460d367131950984ab113b4d216d",
+      "source": "https://static.crates.io/crates/minimal-lexical/minimal-lexical-0.2.1.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/miniz_oxide-0.8.9.txt",
+      "sha256": "98772333921bbf7232732a32c7bbf4a0667f9677fbf920b8086c64b8beeb793a",
+      "source": "https://static.crates.io/crates/miniz_oxide/miniz_oxide-0.8.9.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/nom-7.1.3.txt",
+      "sha256": "d7ca32e823951e6c0c58d600f173f2fb74e6a5aeaffdf680a560da96788bafa6",
+      "source": "https://static.crates.io/crates/nom/nom-7.1.3.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/num-traits-0.2.19.txt",
+      "sha256": "4b424fa8fa2bd6ef3e3f0142e28a3199f53f20ce6cf8e23244df91abca4be0ae",
+      "source": "https://static.crates.io/crates/num-traits/num-traits-0.2.19.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/ordered-float-5.3.0.txt",
+      "sha256": "45eb3cf000119bfbc2e3275e65d2ca5b2cc53d784c4b03d2bd378fe2bc4e83a5",
+      "source": "https://static.crates.io/crates/ordered-float/ordered-float-5.3.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/ppv-lite86-0.2.21.txt",
+      "sha256": "8dbc8ef536abb217aa74553810d4a876d568943aa86e38bff88e9069a3dd1caa",
+      "source": "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.21.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/proc-macro2-1.0.106.txt",
+      "sha256": "9101aee4d9cd8555054c6898f6aa9149d8bb327311b4b65bbd19b86159a877cd",
+      "source": "https://static.crates.io/crates/proc-macro2/proc-macro2-1.0.106.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/quote-1.0.46.txt",
+      "sha256": "11d4875dc869bd793ff03786eaa295c267c97e4298ed775130b91d76de0ebd23",
+      "source": "https://static.crates.io/crates/quote/quote-1.0.46.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/r-efi-5.3.0.txt",
+      "sha256": "6dfdea53340120e2b7b807186641f93c647de893efb107ccf1d3e8bb67ab8d6d",
+      "source": "https://static.crates.io/crates/r-efi/r-efi-5.3.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/r-efi-6.0.0.txt",
+      "sha256": "420e5707f8a12ce0d3b36cf33114158610d20c37283303344f0ecc01b81ee058",
+      "source": "https://static.crates.io/crates/r-efi/r-efi-6.0.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/rand-0.9.4.txt",
+      "sha256": "b99881f8aba74964e6e295ea6d9d96f05f90b548fdd5d40df0f1b0793fe2627c",
+      "source": "https://static.crates.io/crates/rand/rand-0.9.4.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/rand_chacha-0.9.0.txt",
+      "sha256": "7834b7fbcf73973c7389b858d6276d42d866311e903bf583197ec9ba44892c04",
+      "source": "https://static.crates.io/crates/rand_chacha/rand_chacha-0.9.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/rand_core-0.9.5.txt",
+      "sha256": "ed35fdd81c2980f62d180def95e2abfa42a1596f6b7da61d85a4c9598da3f25b",
+      "source": "https://static.crates.io/crates/rand_core/rand_core-0.9.5.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/rustfst-1.3.1.txt",
+      "sha256": "ebd016a86f3cce1b6c0bc45f8830fb48d61e754ab3fb0b75a6b3bab1d33cc2f9",
+      "source": "https://static.crates.io/crates/rustfst/rustfst-1.3.1.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/rustversion-1.0.23.txt",
+      "sha256": "6cab1e2ef612798239a839f4d9b86692d210f2572efb2239df494b0e572941a2",
+      "source": "https://static.crates.io/crates/rustversion/rustversion-1.0.23.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/serde-1.0.228.txt",
+      "sha256": "8e4bebc51f51e58716c5552f735046440e4c1ac1024b0dc5487228af9dc43230",
+      "source": "https://static.crates.io/crates/serde/serde-1.0.228.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/serde_core-1.0.228.txt",
+      "sha256": "38636c4e11c9b29f9fd2bc3d78209a0497ef1fcdfb870578b624a5a37ca04b02",
+      "source": "https://static.crates.io/crates/serde_core/serde_core-1.0.228.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/serde_derive-1.0.228.txt",
+      "sha256": "8934912f1d60e840e193ff744e2c570caeef8bb2976f02c94d0be5da920d6cb7",
+      "source": "https://static.crates.io/crates/serde_derive/serde_derive-1.0.228.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/simd-adler32-0.3.9.txt",
+      "sha256": "1f3ddac43947b9503abb0bb3d1844b662fb79aa933f8bacecb90b4fcfc67c3ad",
+      "source": "https://static.crates.io/crates/simd-adler32/simd-adler32-0.3.9.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/superslice-1.0.0.txt",
+      "sha256": "8d804aa2dd5ac71952631dadb778d717c0f47e32ee6cf2f54fbbb7b4a591e7be",
+      "source": "https://static.crates.io/crates/superslice/superslice-1.0.0.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/syn-2.0.118.txt",
+      "sha256": "2b91a0c6cc839d4437e2a34a0b493a3c198752d4f783172e5424d37808a350e6",
+      "source": "https://static.crates.io/crates/syn/syn-2.0.118.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/typenum-1.20.1.txt",
+      "sha256": "75f01efac83704fe3b80a6a7d4b12051d037f8c18399af79a8697e642c556ccd",
+      "source": "https://static.crates.io/crates/typenum/typenum-1.20.1.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/unicode-ident-1.0.24.txt",
+      "sha256": "026823275525839961bf6d002b62bd38755f30e3a7c2f7b637b83bebef8eac2c",
+      "source": "https://static.crates.io/crates/unicode-ident/unicode-ident-1.0.24.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/zerocopy-0.8.53.txt",
+      "sha256": "5ffb94ff758a169b03bbdc1f267d7b477aa1a4cc8c95adcffc42b8afe75688c4",
+      "source": "https://static.crates.io/crates/zerocopy/zerocopy-0.8.53.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/Rust/zerocopy-derive-0.8.53.txt",
+      "sha256": "86729f030ad6e63c0ead0c660bbafd2ca22b3b068ab080cce17c73534a832f87",
+      "source": "https://static.crates.io/crates/zerocopy-derive/zerocopy-derive-0.8.53.crate",
+      "generated": true
+    },
+    {
+      "path": "NemoTextProcessing/THIRD-PARTY-LICENSES.md.txt",
+      "sha256": "14d21dbb0deb74aa7775f5803c36609aa6ef0c38c94fb03dbc95efb3645f7678",
+      "source": "https://raw.githubusercontent.com/FluidInference/text-processing-rs/46ebddcea5e1ff673c2cb5256a1b6b0e6c4ff527/THIRD-PARTY-LICENSES.md"
+    },
+    {
+      "path": "SwiftArgumentParser/LICENSE.txt",
+      "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55",
+      "source": "https://github.com/apple/swift-argument-parser/blob/6a52f3251125d74daf04fcbd5e6f08a75d074382/LICENSE.txt"
+    }
+  ]
+}

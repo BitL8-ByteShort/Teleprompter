@@ -14,6 +14,7 @@ case "${1:-}" in
   *) echo 'Usage: package_dmg.sh [--app /path/to/Teleprompter.app]' >&2; exit 2 ;;
 esac
 mkdir -p "$PACKAGING_ROOT" "$DIST_ROOT"
+python3 "$TASK_ROOT/script/verify_licenses.py"
 
 run_logged() {
   local log_file="$1"
@@ -77,6 +78,7 @@ IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$INFO_PLIST
 codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
 xcrun stapler validate "$APP_BUNDLE"
 spctl --assess --type execute -vv "$APP_BUNDLE"
+python3 "$TASK_ROOT/script/verify_licenses.py" --bundle "$APP_BUNDLE"
 
 VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$INFO_PLIST")
 DMG_NAME="Teleprompter-$VERSION-arm64.dmg"
@@ -85,6 +87,9 @@ STAGING_ROOT=$(mktemp -d "$PACKAGING_ROOT/dmg.XXXXXX")
 trap 'rm -rf "$STAGING_ROOT"' EXIT
 ditto "$APP_BUNDLE" "$STAGING_ROOT/Teleprompter.app"
 ln -s /Applications "$STAGING_ROOT/Applications"
+cp "$TASK_ROOT/LICENSE" "$STAGING_ROOT/LICENSE.txt"
+cp "$TASK_ROOT/THIRD_PARTY_NOTICES.md" "$STAGING_ROOT/THIRD_PARTY_NOTICES.md"
+ditto "$TASK_ROOT/Core/Licenses" "$STAGING_ROOT/Licenses"
 cat > "$STAGING_ROOT/Install.txt" <<'TXT'
 Install Teleprompter
 
@@ -97,6 +102,10 @@ The app inside this disk image is Developer ID signed and notarized by Apple.
 
 Apple Speech is the default voice engine. Optional models download inside the
 app. Your scripts and settings stay on this Mac; microphone audio is never saved.
+
+License terms and complete third-party notices are included on this disk image
+and inside the app. Open Help > Licenses & Credits to read them. Optional model
+downloads also receive their own license documents beside the model files.
 
 The repository and releases are private:
 https://github.com/BitL8-ByteShort/Teleprompter

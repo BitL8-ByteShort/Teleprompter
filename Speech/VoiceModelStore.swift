@@ -31,12 +31,14 @@ public enum VoiceModelStore {
             throw NSError(domain: "Teleprompter.Models", code: 1, userInfo: [NSLocalizedDescriptionKey:
                 "Download \(engine.title) in Transcription models first, or select Apple Speech."])
         }
+        try ModelLicenses.install(for: engine, besideModels: folder(engine))
     }
 
     /// Downloads only files and the small tokenizer; does not load a recognition
     /// model, open the microphone, or change the selected engine.
     public static func download(_ engine: VoiceEngine, progress: @escaping @Sendable (String) -> Void) async throws {
         let root = folder(engine)
+        try ModelLicenses.install(for: engine, besideModels: root)
         switch engine {
         case .apple: return
         case .moonshine:
@@ -64,6 +66,11 @@ public enum VoiceModelStore {
         var files: [String: Int] = [:]
         let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey])
         while let url = enumerator?.nextObject() as? URL {
+            // License updates must not make intact weights appear missing.
+            if url == root.appendingPathComponent("Licenses", isDirectory: true) {
+                enumerator?.skipDescendants()
+                continue
+            }
             guard url.lastPathComponent != "ready.json" else { continue }
             let values = try url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
             if values.isRegularFile == true, let size = values.fileSize {

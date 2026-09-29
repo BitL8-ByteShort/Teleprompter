@@ -205,5 +205,7 @@ those contributions in future releases, including commercial releases. The
 repository remains private, so contributors need authorized access.
 
 Third-party code and models retain their own terms. See the
-[third-party licensing notes](THIRD_PARTY_NOTICES.md) for sources and the
-remaining distribution-notice work.
+[third-party notices](THIRD_PARTY_NOTICES.md) for the inventory and full license
+texts. Those documents ship inside the app and installer; open
+**Help → Licenses & Credits** to read them. Model downloads include their own
+terms beside the downloaded files.

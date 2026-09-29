@@ -1,0 +1,10 @@
+Eigen 3.4.0 (MPL-2.0 subset) used by Moonshine 0.1.5
+
+The corresponding source, including the subset selected by Moonshine, is
+available at no charge at:
+https://github.com/moonshine-ai/moonshine/tree/234f60faa0eb388b01cdf7e60aca232af37aefda/core/third-party/Eigen
+
+These files remain licensed under MPL-2.0. You may obtain, modify, and
+redistribute this covered source under that license. Teleprompter's
+proprietary terms do not restrict those rights. Teleprompter has not
+modified these Eigen files. See COPYING.MPL2 for the full license.
