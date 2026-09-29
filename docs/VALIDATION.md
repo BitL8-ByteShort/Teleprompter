@@ -78,7 +78,30 @@ transcription and real matcher integration. The signed app was rebuilt and
 relaunched at the saved reading position. These fixture timings describe this
 comparison, not a guaranteed microphone latency or human comfort result.
 
-## Pending live checks
+## Continuous voice scrolling repair
+
+The faster recognition setting alone did not solve the reported reading feel.
+The display still quantized voice positions to whole lines and eased each jump
+over roughly 90 milliseconds. Voice mode now uses fractional word positions
+within lines and a continuous, velocity-preserving scroll controller. It starts
+moving on the next frame, limits large catch-up movements, and never scrolls
+beyond confirmed script progress. The final recognized words scroll out before
+the completion message replaces them.
+
+Matching now accepts two exact words within two words of the segment anchor to
+start sooner. Fuzzy matching retains its three-word threshold. An exact nearby
+three-word suffix can recover after an ad-lib in the same transcript; cached
+accepted results prevent duplicate partials from consuming repeated passages.
+
+The regression tests reproduced the old 9-point first-frame jump and the
+200-point jump after a delayed frame. The new controller passes movement,
+frame-rate consistency, bounded catch-up, silence, retake, line-boundary,
+short-phrase, ad-lib recovery, and delayed completion checks. All 28 tests passed,
+including on-device transcription. The signed build was relaunched and voice
+capture started successfully. Subjective scrolling comfort still needs a live
+read-through; numerical tests are not proof of that experience.
+
+## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made
 that these remaining checks have passed:

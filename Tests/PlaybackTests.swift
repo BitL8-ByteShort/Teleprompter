@@ -53,3 +53,14 @@ import Testing
     playback.seek(-4, wordCount: 20)
     #expect(playback.position == 0)
 }
+
+@Test func voiceFinishWaitsForTheLastWordsToScrollOut() {
+    var playback = Playback()
+    playback.play(now: 0, wordCount: 10, delay: 0)
+    playback.position = 10
+    playback.tick(now: 1, wordCount: 10, wpm: 130, automatic: false, readyToFinish: false)
+    #expect(playback.state == .playing)
+    #expect(playback.position == 10)
+    playback.tick(now: 2, wordCount: 10, wpm: 130, automatic: false, readyToFinish: true)
+    #expect(playback.state == .finished)
+}

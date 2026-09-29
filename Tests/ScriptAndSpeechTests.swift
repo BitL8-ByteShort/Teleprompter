@@ -30,7 +30,7 @@ import Testing
 @Test func smallOmissionAndRevisedRecognitionRecover() {
     let script = Script("today we build a wonderful native application for recording videos")
     var alignment = SpeechAlignment()
-    #expect(alignment.consume("today we", segment: 0, isFinal: false, script: script, position: 0) == nil)
+    #expect(alignment.consume("today", segment: 0, isFinal: false, script: script, position: 0) == nil)
     #expect(alignment.consume("today we build a native application", segment: 0, isFinal: true, script: script, position: 0) == 7)
 }
 
@@ -41,4 +41,23 @@ import Testing
     #expect(alignment.consume("welcome to the final scene", segment: 0, isFinal: true, script: script, position: 0) == nil)
     alignment.reset()
     #expect(alignment.consume("welcome to the final scene", segment: 0, isFinal: true, script: script, position: 104) == 109)
+}
+
+@Test func exactOpeningWordsRespondBeforeAWholePhraseIsFinished() {
+    let script = Script("welcome to teleprompter welcome to another episode")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("welcome", segment: 0, isFinal: false, script: script, position: 0) == nil)
+    #expect(alignment.consume("welcome to", segment: 0, isFinal: false, script: script, position: 0) == 2)
+    #expect(alignment.consume("welcome to", segment: 0, isFinal: false, script: script, position: 2) == 2)
+}
+
+@Test func resumedScriptIsRecognizedPromptlyAfterAnAdlibInSameSegment() {
+    let script = Script("today we build a native application for recording videos")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("today we build", segment: 0, isFinal: false, script: script, position: 0) == 3)
+    #expect(alignment.consume("today we build let me grab my coffee first", segment: 0, isFinal: false, script: script, position: 3) == nil)
+    let resumed = "today we build let me grab my coffee first a native application"
+    #expect(alignment.consume(resumed, segment: 0, isFinal: false, script: script, position: 3) == 6)
+    // Repeated partial results cannot eat a second occurrence of a phrase.
+    #expect(alignment.consume(resumed, segment: 0, isFinal: true, script: script, position: 6) == 6)
 }

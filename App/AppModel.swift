@@ -26,6 +26,7 @@ final class AppModel {
     @ObservationIgnored private var saveTask: Task<Void, Never>?
     @ObservationIgnored private var startTask: Task<Void, Never>?
     @ObservationIgnored private var alignment = SpeechAlignment()
+    @ObservationIgnored private var voiceScroll = VoiceScroll()
     @ObservationIgnored private let speech = SpeechService()
     @ObservationIgnored private let store: DraftStore
     @ObservationIgnored private var lastSave: Double = 0
@@ -118,7 +119,8 @@ final class AppModel {
     }
 
     private func syncReadingOffset() {
-        readingOffset = layout.offset(position: playback.position, lineHeight: lineHeight, smooth: settings.mode == .automatic)
+        readingOffset = layout.offset(position: playback.position, lineHeight: lineHeight)
+        voiceScroll.reset(to: readingOffset)
     }
 
     func togglePlayback() {
@@ -188,12 +190,12 @@ final class AppModel {
         let previous = playback.state
         let now = ProcessInfo.processInfo.systemUptime
         let elapsed = max(0, now - (playback.lastTime ?? now))
-        playback.tick(now: now, wordCount: script.tokens.count, wpm: settings.wpm, automatic: settings.mode == .automatic)
-        let target = layout.offset(position: playback.position, lineHeight: lineHeight, smooth: settings.mode == .automatic)
+        let scrollSettled = abs(readingOffset - layout.offset(position: playback.position, lineHeight: lineHeight)) < 0.5
+        playback.tick(now: now, wordCount: script.tokens.count, wpm: settings.wpm, automatic: settings.mode == .automatic,
+                      readyToFinish: settings.mode == .automatic || scrollSettled)
+        let target = layout.offset(position: playback.position, lineHeight: lineHeight)
         if settings.mode == .voice {
-            // Ease recognized line changes across a few frames while keeping the
-            // logical speech position exact for retakes and partial-result matching.
-            readingOffset += (target - readingOffset) * min(1, elapsed / 0.09)
+            readingOffset = voiceScroll.advance(to: target, elapsed: elapsed, lineHeight: lineHeight)
         } else { readingOffset = target }
         if playback.state == .finished && previous != .finished {
             speech.stop(); microphoneLevel = 0; speechStatus = "Microphone off"; save()

@@ -19,7 +19,7 @@ struct Playback: Sendable {
         countdown = 0
         lastTime = nil
     }
-    mutating func tick(now: Double, wordCount: Int, wpm: Double, automatic: Bool) {
+    mutating func tick(now: Double, wordCount: Int, wpm: Double, automatic: Bool, readyToFinish: Bool = true) {
         var elapsed = max(0, now - (lastTime ?? now))
         lastTime = now
         if state == .countdown {
@@ -32,7 +32,7 @@ struct Playback: Sendable {
         if automatic { position += elapsed * max(0, wpm) / 60 }
         if position >= Double(wordCount) {
             position = Double(wordCount)
-            state = .finished
+            if readyToFinish { state = .finished }
         }
     }
     mutating func seek(_ position: Double, wordCount: Int) {

@@ -71,8 +71,14 @@ Live prompting uses Apple's faster partial results to reduce recognition delay.
 The text still needs a confident nearby match before it moves.
 
 The matcher compares nearby script words, tolerates small omissions, and handles
-revised partial transcripts. It holds during silence, unrelated ad-libs, or
+revised partial transcripts. Two exact words near your current position can
+start movement; longer or fuzzy matches require more evidence. Recognized words
+move the panel continuously through each line, with gradual acceleration and
+deceleration. A delayed batch cannot snap it several lines ahead. It holds
+during silence, unrelated ad-libs, or
 uncertain matches. It does not jump across the whole script looking for a phrase.
+When you return from an ad-lib, a nearby exact three-word suffix can rejoin the
+script without waiting for the ad-lib to disappear from the transcript.
 Routine microphone configuration notifications keep a working input running;
 if the audio engine stops or its format changes, the app rebuilds the input
 without resetting your reading position.

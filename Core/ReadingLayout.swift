@@ -25,10 +25,10 @@ struct ReadingLayout {
         }
         if !text.isEmpty { lines.append(.init(id: lines.count, text: text, firstWord: first, endWord: script.tokens.count)) }
     }
-    func offset(position: Double, lineHeight: Double, smooth: Bool) -> Double {
+    func offset(position: Double, lineHeight: Double) -> Double {
         guard let index = lines.lastIndex(where: { Double($0.firstWord) <= position }) else { return 0 }
         let line = lines[index]
-        let fraction = smooth ? min(1, max(0, (position - Double(line.firstWord)) / Double(max(1, line.endWord - line.firstWord)))) : 0
+        let fraction = min(1, max(0, (position - Double(line.firstWord)) / Double(max(1, line.endWord - line.firstWord))))
         return (Double(index) + fraction) * lineHeight
     }
 }
