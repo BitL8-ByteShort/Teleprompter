@@ -9,9 +9,11 @@ actor MoonshineBackend: VoiceBackend {
         try VoiceModelStore.requireDownloaded(.moonshine)
         let directory = VoiceModelStore.folder(.moonshine)
         try Task.checkCancellation()
-        report(.status("Loading Moonshine Small…"))
-        let transcriber = try Transcriber(modelPath: directory.path, modelArch: .smallStreaming)
-        self.transcriber = transcriber
+        if transcriber == nil {
+            report(.status("Loading Moonshine Small…"))
+            transcriber = try Transcriber(modelPath: directory.path, modelArch: .smallStreaming)
+        }
+        guard let transcriber else { return }
         let stream = try transcriber.createStream(updateInterval: 0.25)
         self.stream = stream
         stream.addListener { event in
@@ -32,10 +34,13 @@ actor MoonshineBackend: VoiceBackend {
         try stream?.addAudio(samples, sampleRate: 16_000)
     }
     func finish() throws { try stream?.stop() }
-    func stop() {
+    func suspend() {
         // Dropping the stream closes it; calling close explicitly would free it twice.
         stream?.removeAllListeners()
         stream = nil
+    }
+    func stop() {
+        suspend()
         transcriber = nil
     }
 }

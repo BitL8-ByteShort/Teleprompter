@@ -35,7 +35,7 @@ struct EditorView: View {
                         Text(model.saveStatus).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                         Spacer()
                         Button("Read from cursor", systemImage: "text.cursor") { model.readFromSelection() }
-                            .help("Place the cursor in your script, then resume reading there after a countdown")
+                            .help("Place the cursor in your script, then resume there using your countdown setting")
                     }
                 }.padding(24).frame(minWidth: 430)
                 inspector.frame(width: 300)
@@ -78,11 +78,17 @@ struct EditorView: View {
                         Text("Auto-scroll").tag(ScrollMode.automatic)
                         Text("Voice-follow").tag(ScrollMode.voice)
                     }.pickerStyle(.segmented).labelsHidden()
+                    Picker("Countdown", selection: setting(\.countdownSeconds)) {
+                        Text("No countdown").tag(0)
+                        Text("1 second").tag(1)
+                        Text("2 seconds").tag(2)
+                        Text("3 seconds").tag(3)
+                    }.pickerStyle(.menu)
                     if model.settings.mode == .automatic {
                         control("Reading speed", value: "\(Int(model.settings.wpm)) wpm") {
                             Slider(value: setting(\.wpm), in: 60...240, step: 5).accessibilityLabel("Reading speed")
                         }
-                        Text("A steady pace, with a three-second lead-in.").font(.caption).foregroundStyle(.secondary)
+                        Text("A steady pace. Scrolling repositions your take, then continues automatically.").font(.caption).foregroundStyle(.secondary)
                     } else {
                         Text("Using \(model.settings.voiceEngine.title)").font(.caption.weight(.medium))
                         Picker("Microphone", selection: setting(\.microphoneID)) {

@@ -40,9 +40,32 @@ import Testing
     #expect(recovered.settings.lineCount == 4)
     #expect(recovered.settings.opacity == 0.6)
     #expect(recovered.settings.wpm == 145)
+    #expect(recovered.settings.countdownSeconds == 3)
     #expect(recovered.settings.mode == .voice)
     #expect(recovered.settings.microphoneID == "BuiltInMicrophoneDevice")
     #expect(recovered.settings.shortcuts["play"]?.label == "⌥⌘P")
+}
+
+@Test func countdownChoiceSurvivesSavingAndInvalidValuesAreClamped() throws {
+    #expect(PrompterSettings().countdownSeconds == 3)
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathComponent("draft.json")
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    let store = DraftStore(url: url)
+    for seconds in 0...3 {
+        var settings = PrompterSettings()
+        settings.countdownSeconds = seconds
+        try store.save(.init(text: "Keep my script", settings: settings, position: 1.5))
+        let saved = try #require(try store.load())
+        #expect(saved.settings.countdownSeconds == seconds)
+        #expect(saved.position == 1.5)
+    }
+    var settings = PrompterSettings()
+    settings.countdownSeconds = -1
+    settings.sanitize()
+    #expect(settings.countdownSeconds == 0)
+    settings.countdownSeconds = 50
+    settings.sanitize()
+    #expect(settings.countdownSeconds == 3)
 }
 
 @Test func voiceEngineSelectionSurvivesRelaunchAndUnknownVersionsFallBackToApple() throws {

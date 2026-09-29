@@ -158,6 +158,36 @@ read-through; numerical tests are not proof of that experience.
 - Physical trackpad and mouse-wheel feel remains a user check. The editor was
   actively in use during validation, so automated UI interaction was stopped.
 
+## Resume after manual scrolling and optional countdown — September 29
+
+- A scroll gesture remembers whether it interrupted an active take. After 350 ms
+  without another wheel or momentum event, auto-scroll restarts at the new
+  fractional position without a countdown. Voice-follow starts a fresh session
+  and alignment anchor there. A paused/stopped take remains paused.
+- The Pause control remains available while a running take is being repositioned.
+  Explicit pause, hide, script edit, navigation, mode/model changes, and shutdown
+  cancel any pending automatic resume. Old speech callbacks are invalidated.
+- Moonshine and Parakeet now retain only the selected model across suspension,
+  like Whisper already did. Transcript/audio state resets for the next take;
+  switching engines or leaving voice mode releases the old model.
+- Added a saved Countdown menu with No countdown, 1 second, 2 seconds, and
+  3 seconds. Existing drafts default to 3 seconds. Explicit starts honor the
+  choice; automatic continuation after scrolling always skips the countdown.
+- The signed app built and launched. The native menu exposed all four choices,
+  and selecting No countdown persisted as zero in the saved draft and survived
+  relaunch. The default 3 seconds was restored after testing.
+- Both Moonshine and Parakeet transcribed the fixture on two successive takes
+  using the new `VoiceEngineCheck --retake` path. The second take prepared in
+  roughly 3 ms and 1 ms respectively, without reloading their models, and returned
+  a fresh transcript rather than appending to the first take.
+- The regression suite passed 40 tests, with the existing opt-in Apple speech
+  fixture test skipped. New tests cover all countdown delays, settings recovery,
+  gesture/momentum settling, pause cancellation, auto-scroll elapsed time after
+  repositioning, and voice alignment at a newly selected passage.
+- Automated wheel input into the nonactivating panel is blocked by the UI tool's
+  `noWindowsAvailable` error. Panel rendering remains inspectable; physical
+  gesture feel and timing are still a user check.
+
 ## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made

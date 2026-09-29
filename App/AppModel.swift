@@ -9,6 +9,7 @@ final class AppModel {
     var script: Script
     var layout: ReadingLayout
     var playback = Playback()
+    private var manualScroll = ManualScrollSession()
     var readingOffset: Double = 0
     var selection = NSRange(location: 0, length: 0)
     var overlayVisible = true
@@ -80,11 +81,12 @@ final class AppModel {
         if let timer { RunLoop.main.add(timer, forMode: .common) }
     }
 
-    var running: Bool { playback.state == .playing || playback.state == .countdown || isPreparing }
+    var running: Bool { playback.state == .playing || playback.state == .countdown || isPreparing || manualScroll.shouldResume }
     var lineHeight: Double { settings.fontSize * 1.35 }
     var progress: Double { script.tokens.isEmpty ? 0 : min(1, playback.position / Double(script.tokens.count)) }
     var estimatedMinutes: Int { Int(ceil(Double(script.tokens.count) / settings.wpm)) }
     var stateLabel: String {
+        if manualScroll.shouldResume { return "Repositioning…" }
         if isPreparing { return "Preparing voice-follow…" }
         switch playback.state {
         case .stopped: return "Ready"
@@ -132,12 +134,17 @@ final class AppModel {
 
     func togglePlayback() {
         if running { pause(); return }
+        startPlayback(delay: Double(settings.countdownSeconds))
+    }
+
+    private func startPlayback(delay: Double) {
+        manualScroll.cancel()
         guard !script.tokens.isEmpty else { return }
         if !overlayVisible { overlayVisible = true; overlayChanged?() }
         errorMessage = nil
         alignment.reset()
         if settings.mode == .automatic {
-            playback.play(now: ProcessInfo.processInfo.systemUptime, wordCount: script.tokens.count)
+            playback.play(now: ProcessInfo.processInfo.systemUptime, wordCount: script.tokens.count, delay: delay)
             syncReadingOffset()
             log.info("Started automatic playback")
             return
@@ -151,7 +158,7 @@ final class AppModel {
                 try await speech.start(microphoneID: settings.microphoneID, voiceEngine: settings.voiceEngine)
                 guard !Task.isCancelled, generation == token else { return }
                 isPreparing = false
-                playback.play(now: ProcessInfo.processInfo.systemUptime, wordCount: script.tokens.count)
+                playback.play(now: ProcessInfo.processInfo.systemUptime, wordCount: script.tokens.count, delay: delay)
                 syncReadingOffset()
                 log.info("Started voice playback")
             } catch is CancellationError { }
@@ -163,6 +170,7 @@ final class AppModel {
     }
 
     func pause() {
+        manualScroll.cancel()
         generation += 1
         startTask?.cancel(); startTask = nil
         isPreparing = false
@@ -182,9 +190,12 @@ final class AppModel {
     }
     func scrollReadingPanel(by delta: Double) {
         guard delta.isFinite, delta != 0, !layout.lines.isEmpty else { return }
-        // Stop capture once, not on every trackpad/momentum event. Start from the
-        // visible offset, which may trail recognized speech during catch-up.
-        if running { pause() }
+        // Pause capture once and remember whether this gesture interrupted a take.
+        // Later momentum events extend the hold without changing that intent.
+        let wasRunning = running
+        if !manualScroll.isActive { pause() }
+        manualScroll.record(now: ProcessInfo.processInfo.systemUptime, wasRunning: wasRunning)
+        // Start from the visible offset, which can trail recognized speech.
         let position = layout.scrolledPosition(from: readingOffset, by: delta, lineHeight: lineHeight)
         playback.seek(position, wordCount: script.tokens.count)
         syncReadingOffset()
@@ -240,9 +251,12 @@ final class AppModel {
     func useAutoScroll() { pause(); speech.releaseModel(); settings.mode = .automatic; errorMessage = nil; scheduleSave() }
 
     private func tick() {
+        let now = ProcessInfo.processInfo.systemUptime
+        if manualScroll.isActive, manualScroll.takeResumeIfSettled(now: now) {
+            startPlayback(delay: 0)
+        }
         guard playback.state == .playing || playback.state == .countdown else { return }
         let previous = playback.state
-        let now = ProcessInfo.processInfo.systemUptime
         let elapsed = max(0, now - (playback.lastTime ?? now))
         let scrollSettled = abs(readingOffset - layout.offset(position: playback.position, lineHeight: lineHeight)) < 0.5
         playback.tick(now: now, wordCount: script.tokens.count, wpm: settings.wpm, automatic: settings.mode == .automatic,

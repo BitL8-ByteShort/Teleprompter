@@ -10,6 +10,7 @@ struct PrompterSettings: Codable, Equatable, Sendable {
     var opacity: Double = 0.94
     var alignment: ReadingAlignment = .left
     var wpm: Double = 130
+    var countdownSeconds: Int = 3
     var mode: ScrollMode = .automatic
     var voiceEngine: VoiceEngine = .apple
     var microphoneID: String = ""
@@ -18,7 +19,7 @@ struct PrompterSettings: Codable, Equatable, Sendable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case fontSize, width, lineCount, opacity, alignment, wpm, mode, voiceEngine, microphoneID, shortcuts
+        case fontSize, width, lineCount, opacity, alignment, wpm, countdownSeconds, mode, voiceEngine, microphoneID, shortcuts
     }
 
     init(from decoder: Decoder) throws {
@@ -29,6 +30,7 @@ struct PrompterSettings: Codable, Equatable, Sendable {
         opacity = try values.decodeIfPresent(Double.self, forKey: .opacity) ?? 0.94
         alignment = try values.decodeIfPresent(ReadingAlignment.self, forKey: .alignment) ?? .left
         wpm = try values.decodeIfPresent(Double.self, forKey: .wpm) ?? 130
+        countdownSeconds = try values.decodeIfPresent(Int.self, forKey: .countdownSeconds) ?? 3
         mode = try values.decodeIfPresent(ScrollMode.self, forKey: .mode) ?? .automatic
         voiceEngine = (try values.decodeIfPresent(String.self, forKey: .voiceEngine)).flatMap(VoiceEngine.init(rawValue:)) ?? .apple
         microphoneID = try values.decodeIfPresent(String.self, forKey: .microphoneID) ?? ""
@@ -41,6 +43,7 @@ struct PrompterSettings: Codable, Equatable, Sendable {
         lineCount = min(4, max(2, lineCount))
         opacity = opacity.isFinite ? min(1, max(0.35, opacity)) : 0.94
         wpm = wpm.isFinite ? min(240, max(60, wpm)) : 130
+        countdownSeconds = min(3, max(0, countdownSeconds))
     }
 }
 

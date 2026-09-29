@@ -7,11 +7,14 @@ actor ParakeetBackend: VoiceBackend {
 
     func prepare(report: @escaping @Sendable (VoiceEvent) -> Void) async throws {
         self.report = report
-        let manager = StreamingEouAsrManager(chunkSize: .ms320)
-        self.manager = manager
         try VoiceModelStore.requireDownloaded(.parakeet)
-        report(.status("Loading Parakeet Realtime…"))
-        try await manager.loadModels(from: VoiceModelStore.folder(.parakeet).appendingPathComponent(Repo.parakeetEou320.folderName))
+        if manager == nil {
+            let loaded = StreamingEouAsrManager(chunkSize: .ms320)
+            report(.status("Loading Parakeet Realtime…"))
+            try await loaded.loadModels(from: VoiceModelStore.folder(.parakeet).appendingPathComponent(Repo.parakeetEou320.folderName))
+            manager = loaded
+        }
+        guard let manager else { return }
         try Task.checkCancellation()
         // FluidAudio returns a cumulative transcript, including across EOU events.
         // Keep one identity until stop/reset, so repeated partials cannot re-advance.
@@ -32,6 +35,11 @@ actor ParakeetBackend: VoiceBackend {
     }
     func finish() async throws {
         if let manager { report?(.transcript(.init(try await manager.finish(), segment: 0, isFinal: true))) }
+    }
+    func suspend() async {
+        await manager?.setPartialTranscriptCallback { _ in }
+        await manager?.reset()
+        report = nil
     }
     func stop() async {
         await manager?.cleanup()

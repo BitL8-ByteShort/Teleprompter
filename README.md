@@ -32,14 +32,19 @@ The local app bundle is `build/Build/Products/Debug/Teleprompter.app`.
 - Paste or import a UTF-8 `.txt` script in the editor. The draft, reading position,
   microphone, shortcuts, and panel settings save automatically on this Mac.
 - Choose **Auto-scroll** (60–240 WPM) or **Voice-follow**, then **Start reading**.
-  Both modes include a three-second countdown.
+  **Countdown** offers No countdown, 1 second, 2 seconds, or 3 seconds. The default
+  is 3 seconds; your choice is saved and applies to both modes.
 - Start with the default 36-point text, 460-point width, and three visible lines.
   Adjust while sitting or standing at your actual 2–4-foot recording distance.
 - Choose **Left**, **Center**, or **Right** under **Reading Panel → Text alignment**.
   Changes apply immediately and are remembered between launches.
-- Click a line in the panel to resume there after a countdown. In the editor, place the
+- Click a line in the panel to resume there using your countdown setting. In the editor, place the
   cursor and choose **Read from cursor**. Previous/next paragraph and Restart
   support retakes. Paragraph navigation pauses; press Play to continue.
+- Scroll over the floating panel with your trackpad or mouse wheel to reposition.
+  A running take continues from the new position after scrolling settles, with no
+  new countdown. Voice-follow starts a fresh recognition session at that passage.
+  A manually paused take stays paused; Pause also cancels a pending scroll resume.
 - Hover over the panel for controls. Hide pauses playback; the same panel window
   is reused when shown again. Closing the editor pauses playback; its menu-bar
   icon can reopen it. Quitting stops microphone capture.
@@ -91,7 +96,7 @@ Expand **Transcription models**, immediately above **Keyboard shortcuts**:
 | Whisper Turbo | Large v3 Turbo, compressed 626 MB Core ML variant, WhisperKit 1.1.0 |
 
 Only the selected engine loads during playback. Pausing stops microphone capture
-immediately. Whisper stays loaded between takes for quick resume; switching
+immediately. The selected optional model stays loaded between takes for quick resume; switching
 engines or returning to auto-scroll releases it before another model loads.
 Whisper uses bounded audio windows and replaces stale partial decode requests
 with the newest audio; it is heavier than the streaming alternatives. Initial
@@ -182,7 +187,8 @@ ffmpeg -i artifacts/voice-fixture.caf -ar 16000 -ac 1 artifacts/voice-fixture-16
 
 Omit `--download` to use only the already-installed model. The harness prints
 partial and final transcripts, streams at real-time speed, and flushes trailing
-silence. It uses the same backend implementations as the app. Fixture accuracy
+silence. Add `--retake` to verify a second take after suspending and resetting
+recognition with the same loaded model. It uses the same backends as the app. Fixture accuracy
 and this Mac's timings are not measurements on an 8 GB Mac or proof of Cap
 recording performance.
 
