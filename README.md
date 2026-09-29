@@ -71,6 +71,9 @@ Teleprompter. There is no account, cloud transcription, or camera permission.
 The matcher compares nearby script words, tolerates small omissions, and handles
 revised partial transcripts. It holds during silence, unrelated ad-libs, or
 uncertain matches. It does not jump across the whole script looking for a phrase.
+Routine microphone configuration notifications keep a working input running;
+if the audio engine stops or its format changes, the app rebuilds the input
+without resetting your reading position.
 For a large skip or retake, move to the intended line and resume. If the microphone
 disconnects or recognition fails, playback pauses without discarding your place;
 **Use auto-scroll** is available in the editor.

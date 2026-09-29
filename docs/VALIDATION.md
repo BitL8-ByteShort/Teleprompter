@@ -1,4 +1,4 @@
-# Validation — September 28, 2026
+# Validation — September 29, 2026
 
 Environment: Apple Silicon MacBook, macOS 26.6.2, Xcode 27.0, built-in Retina
 display plus an external 1080p monitor; Cap Desktop 0.6.0.
@@ -25,13 +25,37 @@ display plus an external 1080p monitor; Cap Desktop 0.6.0.
   bundle identifiers and resolves visible windows before recording. This is
   configuration support, not proof of an excluded recording from this Mac.
 
+## September 29 playback repair
+
+- Reproduced voice-follow pausing immediately after Play: a routine
+  `AVAudioEngineConfigurationChange` notification was treated as a fatal error.
+  The input now checks its actual running state and format, keeps a healthy
+  stream running, and can rebuild a stopped or reformatted stream with bounded
+  retries. Recovery preserves the analyzer session and script position.
+- Live microphone input also exposed a Swift 6 actor-isolation crash in the
+  audio tap. The tap is explicitly `@Sendable` so it runs on AVAudioEngine's
+  callback queue rather than inheriting the UI actor.
+- The corrected signed Debug app was rebuilt and relaunched. Voice-follow
+  completed its countdown, remained active, and Apple's analyzer continuously
+  received microphone audio buffers. A startup configuration notification
+  reported a healthy 48 kHz mono input and no longer paused playback.
+  Pause and resume were also exercised through the UI, returning to microphone
+  off and then listening without a crash or configuration error.
+- Auto-scroll was exercised through the UI: countdown, progress, and completion
+  of the 53-word welcome script were observed.
+- Four regression tests cover startup recovery, harmless notifications, changed
+  formats, and bounded retries. All 19 tests passed in the final run, including
+  Apple's on-device recognition of the generated fixture and actual script
+  alignment.
+- Live spoken-word advancement still needs confirmation. The speaker test was
+  inaudible because the system output was muted; no sound settings were changed.
+
 ## Pending live checks
 
-The Mac locked during verification, and the computer-control tool cannot
-interact with macOS's microphone authorization dialog. No claim is made that
-these checks have passed:
+Microphone access is now granted and the live input starts. No claim is made
+that these remaining checks have passed:
 
-- Approve Teleprompter's microphone access and speak a real script. Check pauses,
+- Speak a real script. Check pauses,
   ad-libs, and retakes; verify the input meter goes to zero and microphone
   capture stops when paused or hidden.
 - Show the panel, add Teleprompter to Cap Desktop's excluded windows, and record

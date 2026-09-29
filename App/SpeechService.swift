@@ -1,6 +1,7 @@
 import AVFoundation
 import CoreAudio
 import Speech
+import OSLog
 
 struct Microphone: Identifiable, Sendable {
     let id: String
@@ -26,7 +27,13 @@ final class SpeechService {
     private var inputTask: Task<Void, Never>?
     private var continuation: AsyncStream<AnalyzerInput>.Continuation?
     private var configurationObserver: NSObjectProtocol?
+    private var recoveryTask: Task<Void, Never>?
+    private var recovery = InputRecovery()
+    private var analyzerFormat: AVAudioFormat?
+    private var inputFormat: AVAudioFormat?
+    private var selectedMicrophoneID = ""
     private var token = UUID()
+    private let log = Logger(subsystem: "com.bitl8byteshort.Teleprompter", category: "AudioInput")
 
     func start(microphoneID: String) async throws {
         stop()
@@ -63,6 +70,8 @@ final class SpeechService {
         try check()
         let engine = AVAudioEngine()
         self.engine = engine
+        self.analyzerFormat = format
+        self.selectedMicrophoneID = microphoneID
         let input = engine.inputNode
         if !microphoneID.isEmpty {
             guard var device = Self.microphones().first(where: { $0.id == microphoneID })?.deviceID,
@@ -72,18 +81,9 @@ final class SpeechService {
             let status = AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device, UInt32(MemoryLayout<AudioDeviceID>.size))
             guard status == noErr else { throw VoiceError.unavailable("Could not open the selected microphone (\(status)).") }
         }
-        let natural = input.outputFormat(forBus: 0)
-        guard natural.sampleRate > 0, natural.channelCount > 0 else { throw VoiceError.unavailable("The microphone has no audio input. Select another microphone.") }
         let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream(bufferingPolicy: .bufferingNewest(64))
         self.continuation = continuation
-        let bridge = try AudioBridge(from: natural, to: format, continuation: continuation,
-            level: { [weak self] level in
-                Task { @MainActor in guard self?.token == sessionToken else { return }; self?.onLevel?(level) }
-            }, failure: { [weak self] message in
-                Task { @MainActor in guard self?.token == sessionToken else { return }; self?.onError?(message) }
-            })
-        input.installTap(onBus: 0, bufferSize: 2048, format: natural) { buffer, _ in bridge.consume(buffer) }
-        tapInstalled = true
+        try installTap(on: engine, sessionToken: sessionToken)
         resultTask = Task { [weak self] in
             do {
                 for try await result in transcriber.results {
@@ -106,7 +106,7 @@ final class SpeechService {
         configurationObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main) { [weak self] _ in
             Task { @MainActor in
                 guard self?.token == sessionToken else { return }
-                self?.onError?("The microphone configuration changed. Check the input and press Play to resume.")
+                self?.scheduleInputRecovery(sessionToken: sessionToken)
             }
         }
         engine.prepare()
@@ -116,6 +116,8 @@ final class SpeechService {
 
     func stop() {
         token = UUID()
+        recoveryTask?.cancel(); recoveryTask = nil
+        recovery = InputRecovery()
         if let configurationObserver { NotificationCenter.default.removeObserver(configurationObserver) }
         configurationObserver = nil
         if let engine {
@@ -129,7 +131,64 @@ final class SpeechService {
         inputTask?.cancel(); inputTask = nil
         if let analyzer { Task { await analyzer.cancelAndFinishNow() } }
         analyzer = nil
+        analyzerFormat = nil
+        inputFormat = nil
         onLevel?(0)
+    }
+
+    private func installTap(on engine: AVAudioEngine, sessionToken: UUID) throws {
+        guard let format = analyzerFormat, let continuation else { throw CancellationError() }
+        let input = engine.inputNode
+        let natural = input.outputFormat(forBus: 0)
+        guard natural.sampleRate > 0, natural.channelCount > 0 else {
+            throw VoiceError.unavailable("The microphone has no audio input. Select another microphone.")
+        }
+        let bridge = try AudioBridge(from: natural, to: format, continuation: continuation,
+            level: { [weak self] level in
+                Task { @MainActor in guard self?.token == sessionToken else { return }; self?.onLevel?(level) }
+            }, failure: { [weak self] message in
+                Task { @MainActor in guard self?.token == sessionToken else { return }; self?.onError?(message) }
+            })
+        // AVAudioEngine calls this on its audio queue. Explicit Sendable prevents
+        // Swift 6 from inheriting this method's MainActor isolation.
+        input.installTap(onBus: 0, bufferSize: 2048, format: natural) { @Sendable buffer, _ in bridge.consume(buffer) }
+        tapInstalled = true
+        inputFormat = natural
+    }
+
+    private func scheduleInputRecovery(sessionToken: UUID) {
+        recoveryTask?.cancel()
+        recoveryTask = Task { [weak self] in
+            // Device selection can deliver several configuration notifications.
+            // Coalesce them and recover outside AVAudioEngine's notification queue.
+            do { try await Task.sleep(for: .milliseconds(150)) } catch { return }
+            guard let self, token == sessionToken, let engine else { return }
+            if !selectedMicrophoneID.isEmpty && !Self.microphones().contains(where: { $0.id == selectedMicrophoneID }) {
+                onError?("The selected microphone disconnected. Select an available microphone and resume.")
+                return
+            }
+            let current = engine.inputNode.outputFormat(forBus: 0)
+            log.info("Input configuration: running=\(engine.isRunning), rate=\(current.sampleRate), channels=\(current.channelCount)")
+            switch recovery.action(now: ProcessInfo.processInfo.systemUptime, isRunning: engine.isRunning, formatUnchanged: current == inputFormat) {
+            case .keepRunning:
+                return
+            case .stop:
+                onError?("The microphone keeps changing its audio configuration. Choose another input or use auto-scroll.")
+            case .rebuild:
+                do {
+                    onStatus?("Reconnecting microphone…")
+                    engine.stop()
+                    if tapInstalled { engine.inputNode.removeTap(onBus: 0); tapInstalled = false }
+                    try installTap(on: engine, sessionToken: sessionToken)
+                    engine.prepare()
+                    try engine.start()
+                    onStatus?("Listening on this Mac")
+                    log.info("Microphone input recovered without resetting script position")
+                } catch {
+                    onError?("Could not reconnect the microphone: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     static func microphones() -> [Microphone] {
