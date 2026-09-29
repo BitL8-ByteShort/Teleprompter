@@ -217,6 +217,27 @@ read-through; numerical tests are not proof of that experience.
   155 WPM setting and updated average-WPM explanation. Diagnostic outputs are
   local-only in `artifacts/scroll-audit/`.
 
+## Signed installer and repository documentation — September 29
+
+- Archived the current app in Release for arm64. Xcode exported it with the
+  existing cloud-managed Developer ID Application certificate for Salty Panda
+  LLC. A local keychain identity listing alone did not expose that certificate.
+- Submitted the archive through Xcode's Developer ID upload path. Stapling and
+  ticket validation succeeded; Gatekeeper reported `accepted` with
+  `source=Notarized Developer ID`. The hardened runtime and microphone entitlement
+  are present, and the exported bundle passes deep/strict signature validation.
+- Created `dist/Teleprompter-1.0-arm64.dmg` (about 24 MB) with the app, an
+  Applications shortcut, and install instructions. Disk-image verification and
+  the SHA-256 checksum passed. Repeated signature, ticket, and Gatekeeper checks
+  on the app mounted from the DMG; copied it out and confirmed the copied Release
+  app launches. The image was then unmounted.
+- Added a reproducible packaging script, Developer ID export options, a revised
+  README, a generated repository banner, and separate development/packaging
+  guides. Local documentation links resolve. No application source changed in
+  this packaging update; the earlier 47-test passing result still applies.
+- This verifies packaging and launch on this Mac. It does not close the Cap,
+  recording-load, or lower-memory hardware checks below.
+
 ## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made

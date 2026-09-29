@@ -1,62 +1,110 @@
+![Teleprompter: a reading panel tucked beneath a MacBook camera](docs/assets/teleprompter-banner.png)
+
 # Teleprompter
 
-A native Mac teleprompter for YouTube recording. The reading panel sits below the
-MacBook camera, with adjustable auto-scroll and on-device voice-follow. Cap (or
-your preferred recorder) records the video separately.
+Read your script close to the camera while you record. Teleprompter is a native
+Mac app built for YouTube videos, with steady auto-scroll and voice-follow that
+runs on your Mac. Use Cap, OBS, or your usual recorder for the video.
 
-## Run
+**This repository is private.** The app is being tested locally and isn't on the
+Mac App Store. The banner above is an illustration of the reading experience.
 
-Requires an Apple Silicon Mac, macOS 26+, and Xcode 26+.
+## What it does
 
-1. Open **Teleprompter.xcodeproj**.
-2. Select the **Teleprompter** scheme and **My Mac**.
-3. Press **⌘R**.
+- **Keeps the words near the camera.** The floating panel sits directly below the
+  built-in display's notch, including when an external monitor is your main screen.
+- **Scrolls at a steady pace.** Choose 60–240 WPM. The setting is an average across
+  the script, so the panel keeps moving at the same speed through short and long lines.
+- **Follows your voice.** Apple Speech is the default. Three optional local models
+  are available to download and select in the app.
+- **Makes retakes easier.** Scroll with a trackpad or mouse wheel, jump between
+  paragraphs, restart, or click the line you want to read.
+- **Remembers your setup.** Your draft, reading position, model choice, shortcuts,
+  and display settings are saved locally.
 
-The project is configured for the existing Salty Panda Apple Development signing
-team on Chris's Mac. On another Mac, select your own team or **Sign to Run Locally**
-in Signing & Capabilities. Xcode resolves the pinned MoonshineVoice, FluidAudio,
-and WhisperKit packages automatically. Speech models are optional downloads in
-the app; they are not bundled with the source or app.
+## Install
 
-The Codex **Run** action and this command build and launch the same app:
+Requires **macOS 26 or later**, **Apple Silicon**, and an open built-in MacBook
+screen for the reading panel. Xcode is only needed if you're building from source.
 
-```sh
-./script/build_and_run.sh --verify
-```
+1. Download the `.dmg` from the [private releases](https://github.com/BitL8-ByteShort/Teleprompter/releases).
+2. Open it and drag **Teleprompter.app** into **Applications**.
+3. Eject the disk image, then open Teleprompter from Applications.
+4. Paste your script and choose **Start reading**.
 
-Optional script modes: `--debug`, `--logs`, and `--telemetry`.
-The local app bundle is `build/Build/Products/Debug/Teleprompter.app`.
+On first launch, auto-scroll is selected and playback is stopped. Optional speech
+models download separately; they aren't bundled into the installer.
 
-## Read a script
+See [packaging notes](docs/PACKAGING.md) for signing, notarization, and rebuilding
+an installer.
 
-- Paste or import a UTF-8 `.txt` script in the editor. The draft, reading position,
-  microphone, shortcuts, and panel settings save automatically on this Mac.
-- Choose **Auto-scroll** (60–240 WPM) or **Voice-follow**, then **Start reading**.
-  **Countdown** offers No countdown, 1 second, 2 seconds, or 3 seconds. The default
-  is 3 seconds; your choice is saved and applies to both modes.
-- Auto-scroll moves at a constant vertical speed. WPM sets the average pace for
-  the whole script, so short and long lines move steadily through the panel.
-- Start with the default 36-point text, 460-point width, and three visible lines.
-  Adjust while sitting or standing at your actual 2–4-foot recording distance.
-- Choose **Left**, **Center**, or **Right** under **Reading Panel → Text alignment**.
-  Changes apply immediately and are remembered between launches.
-- Click a line in the panel to resume there using your countdown setting. In the editor, place the
-  cursor and choose **Read from cursor**. Previous/next paragraph and Restart
-  support retakes. Paragraph navigation pauses; press Play to continue.
-- Scroll over the floating panel with your trackpad or mouse wheel to reposition.
-  A running take continues from the new position after scrolling settles, with no
-  new countdown. Voice-follow starts a fresh recognition session at that passage.
-  A manually paused take stays paused; Pause also cancels a pending scroll resume.
-- Hover over the panel for controls. Hide pauses playback; the same panel window
-  is reused when shown again. Closing the editor pauses playback; its menu-bar
-  icon can reopen it. Quitting stops microphone capture.
-- Resizing the text or panel preserves the current word. The panel tracks the
-  built-in display even when an external monitor is primary. An open MacBook
-  display is required.
+## Set up your first take
 
-Default global shortcuts (customize under **Keyboard shortcuts**):
+Paste a script or import a UTF-8 `.txt` file. You can edit it in the app, export it
+again, or leave it as a saved local draft. Editing pauses playback.
 
-| Action | Shortcut |
+The panel starts with 36-point text, a 460-point width, and three visible lines.
+Adjust the text size, width, visible lines, background opacity, and left/center/right
+alignment from your recording position. The intended distance is about 2–4 feet,
+sitting or standing at your desk.
+
+Choose **Auto-scroll** for a steady pace or **Voice-follow** to move with your
+speech. **Countdown** offers No countdown, 1 second, 2 seconds, or 3 seconds.
+Three seconds is the default, and your choice is saved.
+
+While a take is running, scrolling the panel temporarily takes over. Once your
+trackpad or wheel settles, auto-scroll continues from that spot without another
+countdown. Voice-follow resumes listening from the new passage. If you paused
+manually, scrolling leaves it paused.
+
+Click a line in the panel to start from there. In the editor, place the cursor and
+choose **Read from cursor**. These explicit starts use your countdown setting.
+Previous/next paragraph and Restart pause at the chosen position.
+
+Hover over the panel to reveal its controls. Hiding the panel or closing the editor
+pauses playback. Use the menu-bar icon to reopen the editor. Changing text size or
+panel width preserves the current word.
+
+## Voice-follow and local models
+
+Choose your microphone, then start reading. macOS requests microphone access on
+first use. If needed, enable it under **System Settings → Privacy & Security →
+Microphone**.
+
+| Engine | What it uses |
+| --- | --- |
+| **Apple Speech** (default) | macOS `SpeechAnalyzer` and `SpeechTranscriber`, English (US) |
+| **Moonshine Small** | English Small Streaming, through MoonshineVoice |
+| **Parakeet Realtime** | English EOU 120M, 320 ms Core ML variant, through FluidAudio |
+| **Whisper Turbo** | Large v3 Turbo, compressed Core ML variant, through WhisperKit |
+
+Open **Transcription models**, just above **Keyboard shortcuts**:
+
+1. Click **Download** beside a model. You can download one, two, or all three.
+2. Once it finishes, that button becomes **Use model**.
+3. Click **Use model** to select it. The button changes to **Selected**.
+
+Downloading doesn't change the selected engine. Switching engines pauses the take
+and keeps your place. Apple Speech uses the system's English assets; macOS installs
+them if they're missing.
+
+Only the selected optional model loads. Pause stops microphone capture, while the
+model stays ready for another take. Switching engines or returning to auto-scroll
+releases it. First-time preparation can take longer, particularly with Whisper.
+
+Voice-follow matches nearby words in your script. It holds during silence,
+unrelated ad-libs, or uncertain recognition. For a bigger skip, scroll or select
+the intended passage. If recognition or microphone access fails, your position is
+preserved and **Use auto-scroll** is available.
+
+Performance varies by Mac. Model downloads and fixture tests work on the development
+Mac; recording-load testing on 8 GB and 16 GB machines is still pending.
+
+## Keyboard shortcuts
+
+Change these in **Keyboard shortcuts**. Conflicts are reported in the editor.
+
+| Action | Default |
 | --- | --- |
 | Play / pause | ⌥⌘P |
 | Previous paragraph | ⌥⌘← |
@@ -64,163 +112,61 @@ Default global shortcuts (customize under **Keyboard shortcuts**):
 | Restart | ⌥⌘R |
 | Show / hide panel | ⌥⌘H |
 
-Conflicting shortcuts are reported in the editor. Use a different combination if
-another app already owns one. Capturing a shortcut requires Command or Control;
-Escape cancels.
+## Recording with Cap or OBS
 
-## Voice-follow
+Teleprompter doesn't record video. To keep its panel out of a **Cap Desktop 0.6.0**
+recording:
 
-Select the microphone you speak into, then start reading. macOS asks for
-microphone access on first use. If denied, enable Teleprompter under
-**System Settings → Privacy & Security → Microphone**.
+1. Open Teleprompter and show the reading panel.
+2. In Cap, open **Settings → General → Excluded windows** and add **Teleprompter**.
+3. Make a short Studio recording with your screen, camera, and microphone.
+4. Check the saved video for panel exclusion and intact audio before a full take.
 
-**Apple Speech is the default.** It uses macOS's `SpeechAnalyzer` and
-`SpeechTranscriber` with English (US) and faster partial results. macOS installs
-English assets if they are missing. Existing drafts keep Apple Speech unless you
-explicitly select another engine.
+Keep Teleprompter running during the recording. If you restart it, start a new
+recording so Cap can resolve the new windows. The app's bundle identifier is
+`com.bitl8byteshort.Teleprompter`.
 
-Expand **Transcription models**, immediately above **Keyboard shortcuts**:
+For **OBS**, use a capture source that excludes the panel, such as the specific
+app/window you're demonstrating. For **macOS screen recording**, select the
+external display or an area below the panel. Test microphone access with your
+recorder and Teleprompter running together.
 
-1. Click **Download** on any of the three optional models. Progress and Cancel
-   appear in that row. You can keep one, two, or all three downloaded.
-2. When the download finishes, the same button becomes **Use model**. Downloading
-   does not switch engines or start microphone capture.
-3. Click **Use model** to select it. The button becomes **Selected**. Switching
-   pauses playback and keeps your reading position; press **Start reading** to
-   continue. Your selection and downloads survive relaunch.
-4. Choose **Use model** under Apple Speech to return to the built-in engine.
+Exclusion depends on the recorder. An actual saved recording is the proof that
+it works with your setup; Teleprompter doesn't promise universal invisibility.
 
-| Option | Local implementation |
-| --- | --- |
-| Apple Speech | macOS on-device service, selected by default |
-| Moonshine Small | English Small Streaming, MoonshineVoice 0.1.5 |
-| Parakeet Realtime | English EOU 120M, 320 ms Core ML variant, FluidAudio 0.17.4 |
-| Whisper Turbo | Large v3 Turbo, compressed 626 MB Core ML variant, WhisperKit 1.1.0 |
+## Privacy and local storage
 
-Only the selected engine loads during playback. Pausing stops microphone capture
-immediately. The selected optional model stays loaded between takes for quick resume; switching
-engines or returning to auto-scroll releases it before another model loads.
-Whisper uses bounded audio windows and replaces stale partial decode requests
-with the newest audio; it is heavier than the streaming alternatives. Initial
-Core ML preparation can take time, with status shown before the countdown.
-Try Moonshine or Parakeet first on smaller Macs. Physical 8 GB/16 GB machines,
-including MacBook Neo, still need recording-load qualification.
+No account is required. Recognition runs on your Mac after setup. Teleprompter
+doesn't upload or save microphone audio, and it doesn't request camera access.
+Model downloads need an internet connection.
 
-All recognition runs on this Mac after setup. Downloads need internet; audio is
-never uploaded or saved by Teleprompter. There is no account, cloud transcription,
-or camera permission. Each engine feeds the same nearby-script matcher and
-continuous scrolling controller.
+- Draft and settings: `~/Library/Application Support/Teleprompter/draft.json`
+- Optional models: `~/Library/Application Support/Teleprompter/Models/`
 
-The matcher compares nearby script words, tolerates small omissions, and handles
-revised partial transcripts. Two exact words near your current position can
-start movement; longer or fuzzy matches require more evidence. Recognized words
-move the panel continuously through each line, with gradual acceleration and
-deceleration. A delayed batch cannot snap it several lines ahead. It holds
-during silence, unrelated ad-libs, or
-uncertain matches. It does not jump across the whole script looking for a phrase.
-When you return from an ad-lib, a nearby exact three-word suffix can rejoin the
-script without waiting for the ad-lib to disappear from the transcript.
-Routine microphone configuration notifications keep a working input running;
-if the audio engine stops or its format changes, the app rebuilds the input
-without resetting your reading position.
-For a large skip or retake, move to the intended line and resume. If the microphone
-disconnects or recognition fails, playback pauses without discarding your place;
-**Use auto-scroll** is available in the editor.
+Unreadable drafts are backed up before autosave replaces them. If the backup
+fails, autosave pauses and the app offers export.
 
-## Keep the panel out of Cap recordings
+## Build and test
 
-1. Launch Teleprompter and **show the reading panel before recording**.
-2. In Cap 0.6.0, open **Settings → General → Excluded windows**.
-3. Add **Teleprompter**. Its stable bundle identifier is
-   `com.bitl8byteshort.Teleprompter`; Cap can match all visible windows belonging
-   to the app.
-4. Start a short **Studio** recording with the screen, built-in camera, and your
-   microphone. Inspect the saved recording before a full take.
-5. Keep Teleprompter running during the take. If it is restarted, start a new
-   Cap recording so Cap can resolve the new window IDs.
-
-This setting belongs to Cap. Teleprompter cannot guarantee invisibility in every
-recorder. Cap's bundled CLI has a separate recording path; its capture options
-do not expose the desktop app's excluded-window setting, so use the **Cap desktop
-app** to verify exclusion.
-
-For **OBS**, use a capture source that excludes Teleprompter (for example, a
-specific demonstrated app/window), and inspect a sample. For **macOS capture**,
-record the external display or a selected area below the panel. Match the
-microphone choice in your recorder and Teleprompter, and test simultaneous access.
-
-## Test and develop
+Open **Teleprompter.xcodeproj**, choose **Teleprompter → My Mac**, and press **⌘R**.
+Requires Xcode 26 or later. On another Mac, select your signing team or **Sign to
+Run Locally**. Xcode resolves the pinned speech-engine packages.
 
 ```sh
+./script/build_and_run.sh --verify
 swift test
 ```
 
-The focused suite covers timing, countdowns, pause/resume, finish behavior,
-paragraph navigation, speech matching (including long cumulative transcripts),
-model-selection persistence, bounded Whisper audio windows, local recovery,
-and notch placement.
-An optional integration test runs real on-device recognition against generated
-speech (it may download Apple's English assets):
+- [Development guide](docs/DEVELOPMENT.md): source layout, build commands, speech fixtures, and diagnostics.
+- [Packaging guide](docs/PACKAGING.md): signed DMG creation and notarization.
+- [Validation notes](docs/VALIDATION.md): completed checks and remaining live recording tests.
 
-```sh
-mkdir -p artifacts
-say -v Samantha -o artifacts/voice-fixture.caf 'Today we are building a native teleprompter application for recording YouTube videos. Keep your eyes near the camera and speak at your own pace.'
-TELEPROMPTER_SPEECH_FIXTURE="$PWD/artifacts/voice-fixture.caf" swift test
-```
+## Built with
 
-To compare default and fast recognition using the same fixture streamed at
-real-time speed (no microphone or speaker playback):
+SwiftUI and AppKit, Apple's Speech APIs, [MoonshineVoice](https://github.com/moonshine-ai/moonshine-swift),
+[FluidAudio](https://github.com/FluidInference/FluidAudio), and
+[WhisperKit](https://github.com/argmaxinc/argmax-oss-swift).
 
-```sh
-afconvert -f caff -d LEI16@16000 artifacts/voice-fixture.caf artifacts/voice-fixture-16k.caf
-swiftc Core/Script.swift Core/SpeechAlignment.swift script/benchmark_speech.swift -o artifacts/benchmark_speech
-artifacts/benchmark_speech artifacts/voice-fixture-16k.caf
-```
-
-To exercise the actual downloadable engines without microphone or speaker use:
-
-```sh
-swift build --product VoiceEngineCheck
-ffmpeg -i artifacts/voice-fixture.caf -ar 16000 -ac 1 artifacts/voice-fixture-16k.wav
-.build/debug/VoiceEngineCheck moonshine artifacts/voice-fixture-16k.wav --download
-.build/debug/VoiceEngineCheck parakeet artifacts/voice-fixture-16k.wav --download
-.build/debug/VoiceEngineCheck whisper artifacts/voice-fixture-16k.wav --download
-```
-
-Omit `--download` to use only the already-installed model. The harness prints
-partial and final transcripts, streams at real-time speed, and flushes trailing
-silence. Add `--retake` to verify a second take after suspending and resetting
-recognition with the same loaded model. It uses the same backends as the app. Fixture accuracy
-and this Mac's timings are not measurements on an 8 GB Mac or proof of Cap
-recording performance.
-
-`Core/` contains the shared timing, matching, placement, and persistence logic.
-`App/` owns the SwiftUI editor, nonactivating AppKit panel, global shortcuts,
-and microphone/recognition lifecycle. `Speech/` implements local model downloads
-and the three optional engines. No microphone input is started by tests.
-
-After adding a Swift source file, regenerate the checked-in Xcode project with
-`python3 script/generate_project.py`. The generator requires only Python's
-standard library.
-
-Draft storage: `~/Library/Application Support/Teleprompter/draft.json`.
-Model storage: `~/Library/Application Support/Teleprompter/Models/`.
-Incomplete downloads are not offered for selection; retry **Download** after a
-failure or cancellation. Download receipts check that installed files remain
-present and complete before use.
-Unreadable drafts are backed up before new autosaves; if backup fails, autosave
-is suspended and the editor offers export. Generated media and build outputs
-are ignored by Git.
-
-See [validation notes](docs/VALIDATION.md) for verified behavior and outstanding
-live recording checks.
-
-## Upstream projects
-
-- [Moonshine Swift](https://github.com/moonshine-ai/moonshine-swift)
-- [FluidAudio](https://github.com/FluidInference/FluidAudio) and
-  [Parakeet streaming models](https://huggingface.co/FluidInference/parakeet-realtime-eou-120m-coreml)
-- [WhisperKit](https://github.com/argmaxinc/argmax-oss-swift) and
-  [Whisper Core ML models](https://huggingface.co/argmaxinc/whisperkit-coreml)
-
+Model sources include [Parakeet Realtime](https://huggingface.co/FluidInference/parakeet-realtime-eou-120m-coreml)
+and [Whisper Core ML](https://huggingface.co/argmaxinc/whisperkit-coreml).
 See the upstream projects and model cards for their respective licenses.

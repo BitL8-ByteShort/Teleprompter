@@ -1,0 +1,72 @@
+# Packaging Teleprompter
+
+The installer is a compressed `.dmg` containing `Teleprompter.app`, an
+Applications shortcut, and short install instructions. The app inside is signed
+with **Developer ID Application: Salty Panda LLC** and notarized by Apple.
+The repository and its releases remain private.
+
+## Install the app
+
+Open the DMG, drag Teleprompter into Applications, eject the image, and open the
+installed app. It requires macOS 26 or later, Apple Silicon, and an open built-in
+MacBook display. Xcode isn't required to run it.
+
+Speech models aren't bundled into the DMG. Apple Speech is the default, and the
+other three models can be downloaded inside the app. Updating the app preserves
+the draft and models in `~/Library/Application Support/Teleprompter/`.
+
+## Build a signed installer
+
+Run from the repository root:
+
+```sh
+./script/package_dmg.sh
+```
+
+The script archives the Release configuration, exports using Developer ID,
+submits the app for notarization, attaches Apple's ticket, and verifies the
+signature and Gatekeeper assessment before making the disk image. It also writes
+a SHA-256 checksum next to the DMG.
+
+This uses the Apple account signed into Xcode and the Salty Panda team in
+`script/ExportOptions.plist`. Xcode can use the team's cloud-managed Developer ID
+certificate even when it doesn't appear in the local keychain's identity list.
+No private key or Apple password is stored in the repository.
+
+Outputs:
+
+- `dist/Teleprompter-1.0-arm64.dmg`
+- `dist/Teleprompter-1.0-arm64.dmg.sha256`
+- Build, export, and notarization logs under `build/packaging/`
+
+The filename follows the version in `App/Info.plist`. Generated installers,
+archives, models, and build logs are ignored by Git. Installers can be attached
+to releases in this private repository.
+
+To package an app that is already signed, notarized, and stapled:
+
+```sh
+./script/package_dmg.sh --app build/packaging/export/Teleprompter.app
+```
+
+The same validation gates run before packaging. A development-signed app or one
+without a valid notarization ticket won't pass.
+
+## If notarization hasn't finished
+
+Upload success alone doesn't mean approval. The script waits for the ticket and
+stops if it isn't available. Check the archive's status in Xcode Organizer, then
+attach and validate the ticket before trying the packaging-only command:
+
+```sh
+xcrun stapler staple build/packaging/export/Teleprompter.app
+xcrun stapler validate build/packaging/export/Teleprompter.app
+spctl --assess --type execute -vv build/packaging/export/Teleprompter.app
+```
+
+The Gatekeeper result should be `accepted` with `source=Notarized Developer ID`.
+See [Apple's notarization documentation](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
+for signing requirements and failed-submission diagnostics.
+
+The DMG wraps the notarized app; this process doesn't claim a separate signature
+or notarization ticket for the disk-image container itself.

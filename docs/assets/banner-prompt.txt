@@ -1,0 +1,15 @@
+Teleprompter repository banner
+Generated with the built-in image_gen tool on September 29, 2026.
+This is a product illustration, not an application screenshot.
+
+Use case: product-mockup
+Asset type: GitHub repository README banner for a native macOS app named Teleprompter.
+Create a polished wide landscape banner, approximately 2:1 aspect ratio. Restrained, clean product illustration with generous negative space. Use the app's existing dark charcoal, white, and soft mint-green palette.
+The main visual is the top portion of a modern dark aluminum laptop display, viewed straight on, with a central camera notch. A compact dark floating teleprompter panel sits immediately beneath the notch, centered on the camera. Show three large readable script lines in the panel, the first bright white and the upcoming lines softly gray, plus a thin mint reading marker at the left. The panel text should read exactly:
+"Keep your eyes near"
+"the camera. Speak at"
+"your own pace."
+Use subtle soft lighting and crisp edges, with the hardware and panel forming a simple, believable illustration rather than a fake detailed app screenshot.
+Balance the laptop illustration with large, beautifully spaced white title text exactly "Teleprompter". Beneath the title, smaller text exactly "Native macOS. Local voice-follow."
+Keep all title text well inside the safe margins and legible at README width.
+No Apple logo, third-party logos, extra badges, invented controls, watermarks, people, desk accessories, or busy textures. Opaque background.
