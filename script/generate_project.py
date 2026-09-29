@@ -29,7 +29,7 @@ for folder in ['App', 'Core', 'Speech']:
     groups.append(add(folder, f'isa = PBXGroup; children = ({",".join(children)},); path = {folder}; sourceTree = "<group>";'))
 product = add('product', 'isa = PBXFileReference; explicitFileType = wrapper.application; path = Teleprompter.app; sourceTree = BUILT_PRODUCTS_DIR;')
 resource_builds = []
-for path, kind in [('Core/Licenses', 'folder'), ('LICENSE', 'text'), ('THIRD_PARTY_NOTICES.md', 'text')]:
+for path, kind in [('Core/Licenses', 'folder'), ('LICENSE', 'text'), ('THIRD_PARTY_NOTICES.md', 'text'), ('App/Assets.xcassets', 'folder.assetcatalog')]:
     ref = add('resource:' + path, f'isa = PBXFileReference; lastKnownFileType = {kind}; path = {quoted(path)}; sourceTree = "<group>";')
     groups.append(ref)
     resource_builds.append(add('resource-build:' + path, f'isa = PBXBuildFile; fileRef = {ref};'))
@@ -55,7 +55,7 @@ project_configs = []
 target_configs = []
 for name in ['Debug', 'Release']:
     project_configs.append(add('project' + name, f'isa = XCBuildConfiguration; buildSettings = {{ MACOSX_DEPLOYMENT_TARGET = 26.0; SDKROOT = macosx; ARCHS = arm64; SWIFT_VERSION = 6.0; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = {quoted("-Onone" if name == "Debug" else "-O")}; SWIFT_ACTIVE_COMPILATION_CONDITIONS = {quoted("DEBUG" if name == "Debug" else "")}; }}; name = {name};'))
-    target_configs.append(add('target' + name, f'isa = XCBuildConfiguration; buildSettings = {{ PRODUCT_NAME = Teleprompter; PRODUCT_BUNDLE_IDENTIFIER = com.bitl8byteshort.Teleprompter; INFOPLIST_FILE = App/Info.plist; CODE_SIGN_ENTITLEMENTS = App/Teleprompter.entitlements; CODE_SIGN_STYLE = Automatic; CODE_SIGN_IDENTITY = "Apple Development"; DEVELOPMENT_TEAM = 4WWK6TTABC; ENABLE_HARDENED_RUNTIME = YES; ENABLE_APP_SANDBOX = NO; GENERATE_INFOPLIST_FILE = NO; SWIFT_EMIT_LOC_STRINGS = YES; }}; name = {name};'))
+    target_configs.append(add('target' + name, f'isa = XCBuildConfiguration; buildSettings = {{ PRODUCT_NAME = Teleprompter; PRODUCT_BUNDLE_IDENTIFIER = com.bitl8byteshort.Teleprompter; INFOPLIST_FILE = App/Info.plist; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_ENTITLEMENTS = App/Teleprompter.entitlements; CODE_SIGN_STYLE = Automatic; CODE_SIGN_IDENTITY = "Apple Development"; DEVELOPMENT_TEAM = 4WWK6TTABC; ENABLE_HARDENED_RUNTIME = YES; ENABLE_APP_SANDBOX = NO; GENERATE_INFOPLIST_FILE = NO; SWIFT_EMIT_LOC_STRINGS = YES; }}; name = {name};'))
 pc = add('pc', f'isa = XCConfigurationList; buildConfigurations = ({",".join(project_configs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 tc = add('tc', f'isa = XCConfigurationList; buildConfigurations = ({",".join(target_configs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 target = add('target', f'isa = PBXNativeTarget; buildConfigurationList = {tc}; buildPhases = ({source_phase},{frameworks},{resources},); buildRules = (); dependencies = (); name = Teleprompter; packageProductDependencies = ({",".join(package_products)},); productName = Teleprompter; productReference = {product}; productType = "com.apple.product-type.application";')

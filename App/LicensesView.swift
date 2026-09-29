@@ -8,7 +8,7 @@ struct LicensesView: View {
         let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey])
         var result = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
         while let file = enumerator?.nextObject() as? URL {
-            guard ["txt", "md"].contains(file.pathExtension),
+            guard file.pathExtension != "pdf", file.lastPathComponent != "manifest.json",
                   (try? file.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true else { continue }
             result.append("Licenses/" + String(file.path.dropFirst(root.path.count + 1)))
         }

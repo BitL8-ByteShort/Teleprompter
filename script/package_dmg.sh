@@ -31,7 +31,7 @@ if [ -z "$APP_BUNDLE" ]; then
     -project "$TASK_ROOT/Teleprompter.xcodeproj" -scheme Teleprompter \
     -configuration Release -derivedDataPath "$TASK_ROOT/build" \
     -destination 'generic/platform=macOS' \
-    -archivePath "$PACKAGING_ROOT/Teleprompter.xcarchive" archive
+    -archivePath "$PACKAGING_ROOT/Teleprompter.xcarchive" ARCHS=arm64 archive
 
   echo 'Exporting with Developer ID signing through the Xcode account...'
   run_logged "$PACKAGING_ROOT/export.log" xcodebuild -exportArchive \

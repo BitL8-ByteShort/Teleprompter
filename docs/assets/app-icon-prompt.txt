@@ -1,0 +1,11 @@
+Original Teleprompter app icon, generated for this project.
+
+A rounded graphite macOS icon with a mint camera lens above a reading panel.
+Three high-contrast script lines and a mint cursor suggest reading near the
+camera. Front view, restrained depth, no text or wordmark, no microphone or
+play button, transparent outside the rounded tile. Clear at Dock icon sizes.
+
+The 1024-pixel master is App/Assets.xcassets/AppIcon.appiconset/icon_512x512@2x.png.
+Regenerate the smaller native sizes with script/generate_app_icon.sh using a
+separate copy of that master as input. Xcode compiles the catalog into the app's
+AppIcon.icns and Assets.car resources.

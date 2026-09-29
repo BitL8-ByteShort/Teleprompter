@@ -35,8 +35,8 @@ No private key or Apple password is stored in the repository.
 
 Outputs:
 
-- `dist/Teleprompter-1.1.1-arm64.dmg`
-- `dist/Teleprompter-1.1.1-arm64.dmg.sha256`
+- `dist/Teleprompter-1.1.2-arm64.dmg`
+- `dist/Teleprompter-1.1.2-arm64.dmg.sha256`
 - Build, export, and notarization logs under `build/packaging/`
 
 The filename follows the version in `App/Info.plist`. Generated installers,
