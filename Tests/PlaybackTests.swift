@@ -4,7 +4,7 @@ import Testing
 @Test func elapsedTimeDeterminesProgress() {
     var playback = Playback()
     playback.play(now: 100, wordCount: 100, delay: 0)
-    playback.tick(now: 110, wordCount: 100, wpm: 120, automatic: true)
+    playback.tick(now: 110, layout: singleLineLayout(wordCount: 100), wpm: 120, automatic: true)
     #expect(playback.position == 20)
     #expect(playback.state == .playing)
 }
@@ -12,12 +12,12 @@ import Testing
 @Test func pausedTimeIsNotCountedOnResume() {
     var playback = Playback()
     playback.play(now: 0, wordCount: 100, delay: 0)
-    playback.tick(now: 3, wordCount: 100, wpm: 120, automatic: true)
+    playback.tick(now: 3, layout: singleLineLayout(wordCount: 100), wpm: 120, automatic: true)
     playback.pause()
-    playback.tick(now: 20, wordCount: 100, wpm: 120, automatic: true)
+    playback.tick(now: 20, layout: singleLineLayout(wordCount: 100), wpm: 120, automatic: true)
     #expect(playback.position == 6)
     playback.play(now: 30, wordCount: 100, delay: 0)
-    playback.tick(now: 31, wordCount: 100, wpm: 120, automatic: true)
+    playback.tick(now: 31, layout: singleLineLayout(wordCount: 100), wpm: 120, automatic: true)
     #expect(playback.position == 8)
 }
 
@@ -25,12 +25,12 @@ import Testing
     var playback = Playback()
     playback.play(now: 0, wordCount: 10)
     #expect(playback.state == .countdown)
-    playback.tick(now: 2, wordCount: 10, wpm: 120, automatic: true)
+    playback.tick(now: 2, layout: singleLineLayout(wordCount: 10), wpm: 120, automatic: true)
     #expect(playback.position == 0)
     #expect(playback.countdown == 1)
-    playback.tick(now: 4, wordCount: 10, wpm: 120, automatic: true)
+    playback.tick(now: 4, layout: singleLineLayout(wordCount: 10), wpm: 120, automatic: true)
     #expect(playback.position == 2)
-    playback.tick(now: 10, wordCount: 10, wpm: 120, automatic: true)
+    playback.tick(now: 10, layout: singleLineLayout(wordCount: 10), wpm: 120, automatic: true)
     #expect(playback.position == 10)
     #expect(playback.state == .finished)
 }
@@ -40,7 +40,7 @@ import Testing
     playback.play(now: 0, wordCount: 20, delay: 0)
     playback.seek(5, wordCount: 20)
     playback.play(now: 0, wordCount: 20, delay: 0)
-    playback.tick(now: 100, wordCount: 20, wpm: 130, automatic: false)
+    playback.tick(now: 100, layout: singleLineLayout(wordCount: 20), wpm: 130, automatic: false)
     #expect(playback.position == 5)
 }
 
@@ -58,10 +58,10 @@ import Testing
     var playback = Playback()
     playback.play(now: 0, wordCount: 10, delay: 0)
     playback.position = 10
-    playback.tick(now: 1, wordCount: 10, wpm: 130, automatic: false, readyToFinish: false)
+    playback.tick(now: 1, layout: singleLineLayout(wordCount: 10), wpm: 130, automatic: false, readyToFinish: false)
     #expect(playback.state == .playing)
     #expect(playback.position == 10)
-    playback.tick(now: 2, wordCount: 10, wpm: 130, automatic: false, readyToFinish: true)
+    playback.tick(now: 2, layout: singleLineLayout(wordCount: 10), wpm: 130, automatic: false, readyToFinish: true)
     #expect(playback.state == .finished)
 }
 
@@ -70,11 +70,11 @@ import Testing
     playback.play(now: 100, wordCount: 100, delay: Double(seconds))
     #expect(playback.state == (seconds == 0 ? .playing : .countdown))
     if seconds > 0 {
-        playback.tick(now: 100 + Double(seconds) - 0.1, wordCount: 100, wpm: 60, automatic: true)
+        playback.tick(now: 100 + Double(seconds) - 0.1, layout: singleLineLayout(wordCount: 100), wpm: 60, automatic: true)
         #expect(playback.state == .countdown)
         #expect(playback.position == 0)
     }
-    playback.tick(now: 100 + Double(seconds) + 0.5, wordCount: 100, wpm: 60, automatic: true)
+    playback.tick(now: 100 + Double(seconds) + 0.5, layout: singleLineLayout(wordCount: 100), wpm: 60, automatic: true)
     #expect(playback.state == .playing)
     #expect(abs(playback.position - 0.5) < 0.0001)
 }
@@ -97,7 +97,7 @@ import Testing
     }
     #expect(playback.state == .playing)
     #expect(playback.countdown == 0)
-    playback.tick(now: 12.9, wordCount: 100, wpm: 60, automatic: true)
+    playback.tick(now: 12.9, layout: singleLineLayout(wordCount: 100), wpm: 60, automatic: true)
     #expect(abs(playback.position - 21.5) < 0.0001)
     let resumeDecision3 = gesture.takeResumeIfSettled(now: 13)
     #expect(!resumeDecision3)
@@ -128,9 +128,15 @@ import Testing
     let resumeDecision6 = gesture.takeResumeIfSettled(now: 1.4)
     #expect(resumeDecision6)
     playback.play(now: 1.4, wordCount: script.tokens.count, delay: 0)
-    playback.tick(now: 3, wordCount: script.tokens.count, wpm: 130, automatic: false)
+    playback.tick(now: 3, layout: singleLineLayout(wordCount: script.tokens.count), wpm: 130, automatic: false)
     #expect(playback.position == 3)
     #expect(playback.state == .playing)
     #expect(alignment.consume("this is the new passage", segment: 0, isFinal: false,
                               script: script, position: Int(playback.position)) == 8)
+}
+
+// Timing-only fixtures keep all words on one line. Unequal line lengths are
+// exercised separately by AutoScrollTests using the same playback controller.
+private func singleLineLayout(wordCount: Int) -> ReadingLayout {
+    ReadingLayout(script: Script(String(repeating: "word ", count: wordCount)), fontSize: 32, width: 100000)
 }

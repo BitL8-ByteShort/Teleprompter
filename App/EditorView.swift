@@ -88,7 +88,7 @@ struct EditorView: View {
                         control("Reading speed", value: "\(Int(model.settings.wpm)) wpm") {
                             Slider(value: setting(\.wpm), in: 60...240, step: 5).accessibilityLabel("Reading speed")
                         }
-                        Text("A steady pace. Scrolling repositions your take, then continues automatically.").font(.caption).foregroundStyle(.secondary)
+                        Text("Steady scrolling at your target average WPM. Scrolling repositions your take, then continues automatically.").font(.caption).foregroundStyle(.secondary)
                     } else {
                         Text("Using \(model.settings.voiceEngine.title)").font(.caption.weight(.medium))
                         Picker("Microphone", selection: setting(\.microphoneID)) {

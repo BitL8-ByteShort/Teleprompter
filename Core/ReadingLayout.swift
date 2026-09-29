@@ -9,6 +9,7 @@ struct ReadingLine: Identifiable {
 
 struct ReadingLayout {
     var lines: [ReadingLine] = []
+    var wordCount: Int { lines.last?.endWord ?? 0 }
     init(script: Script, fontSize: Double, width: Double) {
         let font = NSFont.systemFont(ofSize: fontSize, weight: .medium)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]
@@ -30,6 +31,15 @@ struct ReadingLayout {
         let line = lines[index]
         let fraction = min(1, max(0, (position - Double(line.firstWord)) / Double(max(1, line.endWord - line.firstWord))))
         return (Double(index) + fraction) * lineHeight
+    }
+
+    /// Advance at a constant vertical speed calibrated to the whole script's WPM.
+    /// Work in lines so resizing can preserve the shared fractional word position.
+    func automaticPosition(from position: Double, elapsed: Double, wpm: Double) -> Double {
+        guard wordCount > 0 else { return 0 }
+        let linesPerSecond = max(0, wpm) / 60 * Double(lines.count) / Double(wordCount)
+        let nextOffset = offset(position: position, lineHeight: 1) + max(0, elapsed) * linesPerSecond
+        return self.position(atOffset: nextOffset, lineHeight: 1)
     }
 
     /// Inverse of offset, preserving fractional words for smooth manual scrolling.

@@ -34,6 +34,8 @@ The local app bundle is `build/Build/Products/Debug/Teleprompter.app`.
 - Choose **Auto-scroll** (60–240 WPM) or **Voice-follow**, then **Start reading**.
   **Countdown** offers No countdown, 1 second, 2 seconds, or 3 seconds. The default
   is 3 seconds; your choice is saved and applies to both modes.
+- Auto-scroll moves at a constant vertical speed. WPM sets the average pace for
+  the whole script, so short and long lines move steadily through the panel.
 - Start with the default 36-point text, 460-point width, and three visible lines.
   Adjust while sitting or standing at your actual 2–4-foot recording distance.
 - Choose **Left**, **Center**, or **Right** under **Reading Panel → Text alignment**.

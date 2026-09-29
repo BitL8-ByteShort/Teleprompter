@@ -41,7 +41,7 @@ struct Playback: Sendable {
         countdown = 0
         lastTime = nil
     }
-    mutating func tick(now: Double, wordCount: Int, wpm: Double, automatic: Bool, readyToFinish: Bool = true) {
+    mutating func tick(now: Double, layout: ReadingLayout, wpm: Double, automatic: Bool, readyToFinish: Bool = true) {
         var elapsed = max(0, now - (lastTime ?? now))
         lastTime = now
         if state == .countdown {
@@ -51,7 +51,8 @@ struct Playback: Sendable {
             if countdown <= 0 { state = .playing }
         }
         guard state == .playing else { return }
-        if automatic { position += elapsed * max(0, wpm) / 60 }
+        if automatic { position = layout.automaticPosition(from: position, elapsed: elapsed, wpm: wpm) }
+        let wordCount = layout.wordCount
         if position >= Double(wordCount) {
             position = Double(wordCount)
             if readyToFinish { state = .finished }

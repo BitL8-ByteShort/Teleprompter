@@ -198,6 +198,25 @@ read-through; numerical tests are not proof of that experience.
   app built and launched successfully. Physical notch clearance and the new
   reading position remain a visual user check.
 
+## Constant-speed auto-scroll — September 29
+
+- Reproduced the reported slowdown in the actual playback/layout code using the
+  saved 53-word script at 155 WPM, 32-point text, and 440-point panel width. The
+  first line moved at 37.20 points/second and the second at 22.32, a 40% drop.
+  Other lines ranged from 15.94 to 37.20 points/second.
+- Auto-scroll now advances through rendered lines at a constant rate calibrated
+  to the complete script's word count and WPM. It maps back to the shared
+  fractional word position for seeking, saved drafts, reflow, and voice mode.
+  The same diagnostic now reports 25.27 points/second for every line. These are
+  playback/layout measurements, not a screen-recording frame-rate benchmark.
+- The unequal-line regression failed before the fix and passed afterward. The
+  suite passed 47 tests, with one opt-in Apple speech test skipped. Coverage
+  includes 30/60/120 Hz and irregular timing, countdown, pause/resume, manual
+  retakes, WPM changes, layout changes, and whole-script completion/restart.
+- The signed app built and launched, and its native editor shows the saved
+  155 WPM setting and updated average-WPM explanation. Diagnostic outputs are
+  local-only in `artifacts/scroll-audit/`.
+
 ## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made

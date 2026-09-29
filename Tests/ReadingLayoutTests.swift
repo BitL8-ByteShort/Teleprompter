@@ -40,8 +40,8 @@ import Testing
     #expect(playback.state == .paused)
     #expect(playback.position == 4)
     playback.play(now: 100, wordCount: 9)
-    playback.tick(now: 104, wordCount: 9, wpm: 60, automatic: true)
-    #expect(playback.position == 5)
+    playback.tick(now: 104, layout: layout, wpm: 60, automatic: true)
+    #expect(abs(layout.offset(position: playback.position, lineHeight: 48) - 88) < 0.000001)
     #expect(ReadingLayout(script: Script(""), fontSize: 36, width: 400)
         .scrolledPosition(from: 0, by: 100, lineHeight: 48) == 0)
 }

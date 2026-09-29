@@ -259,7 +259,7 @@ final class AppModel {
         let previous = playback.state
         let elapsed = max(0, now - (playback.lastTime ?? now))
         let scrollSettled = abs(readingOffset - layout.offset(position: playback.position, lineHeight: lineHeight)) < 0.5
-        playback.tick(now: now, wordCount: script.tokens.count, wpm: settings.wpm, automatic: settings.mode == .automatic,
+        playback.tick(now: now, layout: layout, wpm: settings.wpm, automatic: settings.mode == .automatic,
                       readyToFinish: settings.mode == .automatic || scrollSettled)
         let target = layout.offset(position: playback.position, lineHeight: lineHeight)
         if settings.mode == .voice {
