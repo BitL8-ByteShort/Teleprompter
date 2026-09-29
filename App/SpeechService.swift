@@ -20,6 +20,11 @@ final class SpeechService {
     var onLevel: ((Float) -> Void)?
     var onStatus: ((String) -> Void)?
     var onError: ((String) -> Void)?
+    private var backend: (any VoiceBackend)?
+    private var backendChoice: VoiceEngine?
+    private var preparationTask: Task<Void, Error>?
+    private var cleanupTask: Task<Void, Never>?
+    private var pcmContinuation: AsyncStream<[Float]>.Continuation?
     private var engine: AVAudioEngine?
     private var tapInstalled = false
     private var analyzer: SpeechAnalyzer?
@@ -35,17 +40,91 @@ final class SpeechService {
     private var token = UUID()
     private let log = Logger(subsystem: "com.bitl8byteshort.Teleprompter", category: "AudioInput")
 
-    func start(microphoneID: String) async throws {
+    func start(microphoneID: String, voiceEngine: VoiceEngine) async throws {
         stop()
         let sessionToken = token
         func check() throws {
             try Task.checkCancellation()
             guard sessionToken == token else { throw CancellationError() }
         }
+        await cleanupTask?.value
+        try check()
         onStatus?("Checking microphone access…")
         let permitted = await AVCaptureDevice.requestAccess(for: .audio)
         try check()
         guard permitted else { throw VoiceError.unavailable("Microphone access is off. Enable Teleprompter in System Settings → Privacy & Security → Microphone, or use auto-scroll.") }
+        let format = try await prepareRecognition(voiceEngine, sessionToken: sessionToken)
+        try check()
+        let engine = AVAudioEngine()
+        self.engine = engine
+        self.analyzerFormat = format
+        self.selectedMicrophoneID = microphoneID
+        let input = engine.inputNode
+        if !microphoneID.isEmpty {
+            guard var device = Self.microphones().first(where: { $0.id == microphoneID })?.deviceID,
+                  let unit = input.audioUnit else {
+                throw VoiceError.unavailable("The selected microphone is disconnected. Select an available microphone.")
+            }
+            let status = AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device, UInt32(MemoryLayout<AudioDeviceID>.size))
+            guard status == noErr else { throw VoiceError.unavailable("Could not open the selected microphone (\(status)).") }
+        }
+        try installTap(on: engine, sessionToken: sessionToken)
+        configurationObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                guard self?.token == sessionToken else { return }
+                self?.scheduleInputRecovery(sessionToken: sessionToken)
+            }
+        }
+        engine.prepare()
+        try engine.start()
+        onStatus?("Listening on this Mac")
+    }
+
+    private func prepareRecognition(_ choice: VoiceEngine, sessionToken: UUID) async throws -> AVAudioFormat {
+        if backendChoice != choice {
+            await backend?.stop()
+            try Task.checkCancellation()
+            guard token == sessionToken else { throw CancellationError() }
+            backend = VoiceBackends.make(choice)
+            backendChoice = choice
+        }
+        if let backend {
+            self.backend = backend
+            let task = Task { [weak self] in
+                try await backend.prepare { [weak self] event in
+                    Task { @MainActor in
+                        guard let self, self.token == sessionToken else { return }
+                        switch event {
+                        case .status(let text): self.onStatus?(text)
+                        case .transcript(let result): self.onResult?(result.text, result.segment, result.isFinal)
+                        case .failure(let text): self.onError?(text)
+                        }
+                    }
+                }
+            }
+            preparationTask = task
+            try await task.value
+            try Task.checkCancellation()
+            guard token == sessionToken else { throw CancellationError() }
+            let (stream, continuation) = AsyncStream<[Float]>.makeStream(bufferingPolicy: .bufferingOldest(48))
+            pcmContinuation = continuation
+            inputTask = Task { [weak self] in
+                do {
+                    for await samples in stream {
+                        try Task.checkCancellation()
+                        try await backend.accept(samples)
+                    }
+                } catch {
+                    guard !Task.isCancelled, self?.token == sessionToken else { return }
+                    self?.onError?("Voice-follow stopped: \(error.localizedDescription)")
+                }
+            }
+            return AVAudioFormat(standardFormatWithSampleRate: 16_000, channels: 1)!
+        }
+        func check() throws {
+            try Task.checkCancellation()
+            guard token == sessionToken else { throw CancellationError() }
+        }
         guard SpeechTranscriber.isAvailable else { throw VoiceError.unavailable("On-device speech recognition is unavailable on this Mac. You can still use auto-scroll.") }
         guard let locale = await SpeechTranscriber.supportedLocale(equivalentTo: Locale(identifier: "en_US")) else {
             throw VoiceError.unavailable("English speech recognition is unavailable. Use auto-scroll.")
@@ -71,22 +150,8 @@ final class SpeechService {
         onStatus?("Preparing on-device recognition…")
         try await analyzer.prepareToAnalyze(in: format)
         try check()
-        let engine = AVAudioEngine()
-        self.engine = engine
-        self.analyzerFormat = format
-        self.selectedMicrophoneID = microphoneID
-        let input = engine.inputNode
-        if !microphoneID.isEmpty {
-            guard var device = Self.microphones().first(where: { $0.id == microphoneID })?.deviceID,
-                  let unit = input.audioUnit else {
-                throw VoiceError.unavailable("The selected microphone is disconnected. Select an available microphone.")
-            }
-            let status = AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device, UInt32(MemoryLayout<AudioDeviceID>.size))
-            guard status == noErr else { throw VoiceError.unavailable("Could not open the selected microphone (\(status)).") }
-        }
         let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream(bufferingPolicy: .bufferingNewest(64))
         self.continuation = continuation
-        try installTap(on: engine, sessionToken: sessionToken)
         resultTask = Task { [weak self] in
             do {
                 for try await result in transcriber.results {
@@ -106,15 +171,7 @@ final class SpeechService {
                 self?.onError?("Audio analysis stopped: \(error.localizedDescription)")
             }
         }
-        configurationObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main) { [weak self] _ in
-            Task { @MainActor in
-                guard self?.token == sessionToken else { return }
-                self?.scheduleInputRecovery(sessionToken: sessionToken)
-            }
-        }
-        engine.prepare()
-        try engine.start()
-        onStatus?("Listening on this Mac")
+        return format
     }
 
     func stop() {
@@ -131,7 +188,19 @@ final class SpeechService {
         engine = nil
         continuation?.finish(); continuation = nil
         resultTask?.cancel(); resultTask = nil
-        inputTask?.cancel(); inputTask = nil
+        pcmContinuation?.finish(); pcmContinuation = nil
+        let oldInput = inputTask
+        let oldPreparation = preparationTask
+        let oldBackend = backend
+        let previousCleanup = cleanupTask
+        oldInput?.cancel(); inputTask = nil
+        oldPreparation?.cancel(); preparationTask = nil
+        cleanupTask = Task {
+            await previousCleanup?.value
+            _ = try? await oldPreparation?.value
+            await oldInput?.value
+            await oldBackend?.suspend()
+        }
         if let analyzer { Task { await analyzer.cancelAndFinishNow() } }
         analyzer = nil
         analyzerFormat = nil
@@ -139,14 +208,37 @@ final class SpeechService {
         onLevel?(0)
     }
 
+    /// Called after pause when switching engines/modes or closing the app.
+    /// Release the previous model before a subsequent start can load another.
+    func releaseModel() {
+        let oldBackend = backend
+        let previousCleanup = cleanupTask
+        backend = nil
+        backendChoice = nil
+        cleanupTask = Task {
+            await previousCleanup?.value
+            await oldBackend?.stop()
+        }
+    }
+
     private func installTap(on engine: AVAudioEngine, sessionToken: UUID) throws {
-        guard let format = analyzerFormat, let continuation else { throw CancellationError() }
+        guard let format = analyzerFormat else { throw CancellationError() }
         let input = engine.inputNode
         let natural = input.outputFormat(forBus: 0)
         guard natural.sampleRate > 0, natural.channelCount > 0 else {
             throw VoiceError.unavailable("The microphone has no audio input. Select another microphone.")
         }
-        let bridge = try AudioBridge(from: natural, to: format, continuation: continuation,
+        let continuation = continuation
+        let pcmContinuation = pcmContinuation
+        let bridge = try AudioBridge(from: natural, to: format, deliver: { buffer in
+            if let pcmContinuation, let data = buffer.floatChannelData?[0] {
+                let samples = Array(UnsafeBufferPointer(start: data, count: Int(buffer.frameLength)))
+                if case .dropped = pcmContinuation.yield(samples) { return false }
+            } else if let continuation {
+                if case .dropped = continuation.yield(AnalyzerInput(buffer: buffer)) { return false }
+            }
+            return true
+        },
             level: { [weak self] level in
                 Task { @MainActor in guard self?.token == sessionToken else { return }; self?.onLevel?(level) }
             }, failure: { [weak self] message in
@@ -222,16 +314,16 @@ final class SpeechService {
 private final class AudioBridge: @unchecked Sendable {
     let converter: AVAudioConverter
     let format: AVAudioFormat
-    let continuation: AsyncStream<AnalyzerInput>.Continuation
+    let deliver: @Sendable (AVAudioPCMBuffer) -> Bool
     let level: @Sendable (Float) -> Void
     let failure: @Sendable (String) -> Void
     private var meterFrames: UInt32 = 0
     private var failed = false
 
-    init(from: AVAudioFormat, to: AVAudioFormat, continuation: AsyncStream<AnalyzerInput>.Continuation,
+    init(from: AVAudioFormat, to: AVAudioFormat, deliver: @escaping @Sendable (AVAudioPCMBuffer) -> Bool,
          level: @escaping @Sendable (Float) -> Void, failure: @escaping @Sendable (String) -> Void) throws {
         guard let converter = AVAudioConverter(from: from, to: to) else { throw VoiceError.unavailable("Could not prepare microphone audio for recognition.") }
-        self.converter = converter; self.format = to; self.continuation = continuation; self.level = level; self.failure = failure
+        self.converter = converter; self.format = to; self.deliver = deliver; self.level = level; self.failure = failure
     }
 
     func consume(_ buffer: AVAudioPCMBuffer) {
@@ -256,7 +348,7 @@ private final class AudioBridge: @unchecked Sendable {
             failed = true; failure("Could not convert microphone audio: \(error?.localizedDescription ?? "unknown error")"); return
         }
         if converted.frameLength > 0 {
-            if case .dropped = continuation.yield(AnalyzerInput(buffer: converted)) {
+            if !deliver(converted) {
                 failed = true; failure("Voice-follow could not keep up with audio. Pause other heavy tasks, then resume or use auto-scroll.")
             }
         }

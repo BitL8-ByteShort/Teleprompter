@@ -40,7 +40,9 @@ struct SpeechAlignment: Sendable {
         let remaining = script.tokens.count - position
         let required = isFinal && remaining > 0 && remaining < 3 ? remaining : 3
         guard spoken.count >= required, !spoken.isEmpty else { return nil }
-        let lower = max(0, min(anchor, position) - 8)
+        // Streaming engines can keep one segment for an entire take. Bound the
+        // search behind the current passage even when its original anchor is old.
+        let lower = max(0, max(position - 24, min(anchor, position) - 8))
         let upper = min(words.count, max(anchor, position) + 48)
         guard lower < upper else { return nil }
         var best: (end: Int, score: Double)?

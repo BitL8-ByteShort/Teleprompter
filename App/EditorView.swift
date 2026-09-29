@@ -84,6 +84,7 @@ struct EditorView: View {
                         }
                         Text("A steady pace, with a three-second lead-in.").font(.caption).foregroundStyle(.secondary)
                     } else {
+                        Text("Using \(model.settings.voiceEngine.title)").font(.caption.weight(.medium))
                         Picker("Microphone", selection: setting(\.microphoneID)) {
                             Text("System default").tag("")
                             ForEach(model.microphones) { Text($0.name).tag($0.id) }
@@ -132,6 +133,40 @@ struct EditorView: View {
                     }
                     Text("Centered under your MacBook camera. Adjust from your recording position, 2–4 feet away.")
                         .font(.caption).foregroundStyle(.secondary)
+                }
+                Divider()
+                DisclosureGroup("Transcription models") {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Apple Speech is ready to use. Download any other models you want, then choose Use model. Only the selected model runs; audio stays on this Mac.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        ForEach([VoiceEngine.apple, .moonshine, .parakeet, .whisper], id: \.self) { engine in
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(engine.title).font(.callout.weight(.semibold))
+                                Text(engine.detail).font(.caption).foregroundStyle(.secondary)
+                                if model.downloadingEngine == engine {
+                                    HStack {
+                                        ProgressView().controlSize(.small)
+                                        Text(model.downloadStatus).font(.caption).lineLimit(2)
+                                        Spacer()
+                                        Button("Cancel") { model.cancelModelDownload() }.font(.caption)
+                                    }
+                                } else {
+                                    let selected = model.settings.voiceEngine == engine
+                                    let downloaded = model.downloadedEngines.contains(engine)
+                                    Button(selected && downloaded ? "Selected" : downloaded ? "Use model" : "Download") {
+                                        if downloaded { model.selectEngine(engine) } else { model.downloadModel(engine) }
+                                    }
+                                    .disabled((selected && downloaded) || (!downloaded && model.downloadingEngine != nil))
+                                    .accessibilityLabel("\(selected && downloaded ? "Selected" : downloaded ? "Use" : "Download") \(engine.title)")
+                                }
+                            }
+                        }
+                        if let error = model.modelDownloadError {
+                            Text(error).font(.caption).foregroundStyle(.orange)
+                        }
+                        Text("Internet is needed for downloads. Once downloaded, models stay available after relaunch. Switching pauses your take and keeps your place.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }.padding(.top, 10)
                 }
                 Divider()
                 DisclosureGroup("Keyboard shortcuts") {

@@ -61,3 +61,20 @@ import Testing
     // Repeated partial results cannot eat a second occurrence of a phrase.
     #expect(alignment.consume(resumed, segment: 0, isFinal: true, script: script, position: 6) == 6)
 }
+
+@Test func cumulativeStreamingTranscriptFollowsALongTakeAndResetsForRetakes() {
+    let words = (0..<500).map { "word\($0)" }
+    let script = Script(words.joined(separator: " "))
+    var alignment = SpeechAlignment()
+    var position = 0
+    for end in stride(from: 5, through: words.count, by: 5) {
+        let partial = words.prefix(end).joined(separator: " ")
+        let matched = alignment.consume(partial, segment: 0, isFinal: false, script: script, position: position)
+        #expect(matched == end)
+        position = matched ?? position
+        #expect(alignment.consume(partial, segment: 0, isFinal: false, script: script, position: position) == position)
+    }
+    alignment.reset()
+    #expect(alignment.consume(words[200..<205].joined(separator: " "), segment: 0,
+                              isFinal: false, script: script, position: 200) == 205)
+}

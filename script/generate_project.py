@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the dependency-free Xcode project. Run after adding Swift files."""
+"""Generate the Xcode project with pinned speech-engine packages. Run after adding Swift files."""
 from pathlib import Path
 import hashlib
 
@@ -16,7 +16,7 @@ def add(name, body):
 
 groups = []
 build_files = []
-for folder in ['App', 'Core']:
+for folder in ['App', 'Core', 'Speech']:
     children = []
     for file in sorted((ROOT / folder).iterdir()):
         if file.suffix not in ['.swift', '.plist', '.entitlements']:
@@ -32,7 +32,20 @@ products = add('products', f'isa = PBXGroup; children = ({product},); name = Pro
 main = add('main', f'isa = PBXGroup; children = ({",".join(groups + [products])},); sourceTree = "<group>";')
 source_phase = add('sources', f'isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ({",".join(build_files)},); runOnlyForDeploymentPostprocessing = 0;')
 resources = add('resources', 'isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;')
-frameworks = add('frameworks', 'isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;')
+package_refs = []
+package_products = []
+package_builds = []
+for product_name, url, version in [
+    ('MoonshineVoice', 'https://github.com/moonshine-ai/moonshine-swift.git', '0.1.5'),
+    ('FluidAudio', 'https://github.com/FluidInference/FluidAudio.git', '0.17.4'),
+    ('WhisperKit', 'https://github.com/argmaxinc/argmax-oss-swift.git', '1.1.0'),
+]:
+    ref = add('package:' + product_name, f'isa = XCRemoteSwiftPackageReference; repositoryURL = {quoted(url)}; requirement = {{ kind = exactVersion; version = {version}; }};')
+    dependency = add('dependency:' + product_name, f'isa = XCSwiftPackageProductDependency; package = {ref}; productName = {product_name};')
+    package_refs.append(ref)
+    package_products.append(dependency)
+    package_builds.append(add('link:' + product_name, f'isa = PBXBuildFile; productRef = {dependency};'))
+frameworks = add('frameworks', f'isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ({",".join(package_builds)},); runOnlyForDeploymentPostprocessing = 0;')
 project_configs = []
 target_configs = []
 for name in ['Debug', 'Release']:
@@ -40,8 +53,8 @@ for name in ['Debug', 'Release']:
     target_configs.append(add('target' + name, f'isa = XCBuildConfiguration; buildSettings = {{ PRODUCT_NAME = Teleprompter; PRODUCT_BUNDLE_IDENTIFIER = com.bitl8byteshort.Teleprompter; INFOPLIST_FILE = App/Info.plist; CODE_SIGN_ENTITLEMENTS = App/Teleprompter.entitlements; CODE_SIGN_STYLE = Automatic; CODE_SIGN_IDENTITY = "Apple Development"; DEVELOPMENT_TEAM = 4WWK6TTABC; ENABLE_HARDENED_RUNTIME = YES; ENABLE_APP_SANDBOX = NO; GENERATE_INFOPLIST_FILE = NO; SWIFT_EMIT_LOC_STRINGS = YES; }}; name = {name};'))
 pc = add('pc', f'isa = XCConfigurationList; buildConfigurations = ({",".join(project_configs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 tc = add('tc', f'isa = XCConfigurationList; buildConfigurations = ({",".join(target_configs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
-target = add('target', f'isa = PBXNativeTarget; buildConfigurationList = {tc}; buildPhases = ({source_phase},{frameworks},{resources},); buildRules = (); dependencies = (); name = Teleprompter; productName = Teleprompter; productReference = {product}; productType = "com.apple.product-type.application";')
-project = add('project', f'isa = PBXProject; attributes = {{ LastUpgradeCheck = 2700; }}; buildConfigurationList = {pc}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en,Base,); mainGroup = {main}; productRefGroup = {products}; projectDirPath = ""; projectRoot = ""; targets = ({target},);')
+target = add('target', f'isa = PBXNativeTarget; buildConfigurationList = {tc}; buildPhases = ({source_phase},{frameworks},{resources},); buildRules = (); dependencies = (); name = Teleprompter; packageProductDependencies = ({",".join(package_products)},); productName = Teleprompter; productReference = {product}; productType = "com.apple.product-type.application";')
+project = add('project', f'isa = PBXProject; attributes = {{ LastUpgradeCheck = 2700; }}; buildConfigurationList = {pc}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en,Base,); mainGroup = {main}; productRefGroup = {products}; projectDirPath = ""; projectRoot = ""; packageReferences = ({",".join(package_refs)},); targets = ({target},);')
 bundle = ROOT / 'Teleprompter.xcodeproj'
 bundle.mkdir(exist_ok=True)
 (bundle / 'project.pbxproj').write_text('// !$*UTF8*$!\n{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {\n' + '\n'.join(objects) + f'\n}}; rootObject = {project}; }}\n')

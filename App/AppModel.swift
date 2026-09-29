@@ -20,6 +20,11 @@ final class AppModel {
     var recordingShortcut: String?
     var saveStatus = "Saved on this Mac"
     var microphones: [Microphone] = []
+    var downloadedEngines: Set<VoiceEngine> = [.apple]
+    var downloadingEngine: VoiceEngine?
+    var downloadStatus = ""
+    var modelDownloadError: String?
+    @ObservationIgnored private var downloadTask: Task<Void, Never>?
     @ObservationIgnored var overlayChanged: (() -> Void)?
     @ObservationIgnored var shortcutsChanged: (() -> Void)?
     @ObservationIgnored private var timer: Timer?
@@ -68,6 +73,7 @@ final class AppModel {
         speech.onStatus = { [weak self] status in self?.speechStatus = status }
         speech.onError = { [weak self] message in self?.speechFailed(message) }
         refreshMicrophones()
+        refreshModels()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
@@ -105,7 +111,8 @@ final class AppModel {
         let old = settings
         change(&settings)
         settings.sanitize()
-        if old.mode != settings.mode || old.microphoneID != settings.microphoneID { pause() }
+        if old.mode != settings.mode || old.microphoneID != settings.microphoneID || old.voiceEngine != settings.voiceEngine { pause() }
+        if old.mode != settings.mode || old.voiceEngine != settings.voiceEngine { speech.releaseModel() }
         if old.fontSize != settings.fontSize || old.width != settings.width { rebuildLayout() }
         if old.mode != settings.mode { syncReadingOffset() }
         if old.shortcuts != settings.shortcuts { shortcutsChanged?() }
@@ -141,7 +148,7 @@ final class AppModel {
         startTask = Task { [weak self] in
             guard let self else { return }
             do {
-                try await speech.start(microphoneID: settings.microphoneID)
+                try await speech.start(microphoneID: settings.microphoneID, voiceEngine: settings.voiceEngine)
                 guard !Task.isCancelled, generation == token else { return }
                 isPreparing = false
                 playback.play(now: ProcessInfo.processInfo.systemUptime, wordCount: script.tokens.count)
@@ -183,7 +190,43 @@ final class AppModel {
         overlayChanged?()
     }
     func refreshMicrophones() { microphones = SpeechService.microphones() }
-    func useAutoScroll() { pause(); settings.mode = .automatic; errorMessage = nil; scheduleSave() }
+    func refreshModels() {
+        downloadedEngines = Set(VoiceEngine.allCases.filter { VoiceModelStore.isDownloaded($0) })
+    }
+    func selectEngine(_ engine: VoiceEngine) {
+        refreshModels()
+        guard downloadedEngines.contains(engine) else { return }
+        updateSettings { $0.voiceEngine = engine }
+        errorMessage = nil
+        speechStatus = "\(engine.title) selected · microphone off"
+    }
+    func downloadModel(_ engine: VoiceEngine) {
+        guard downloadingEngine == nil, engine != .apple else { return }
+        downloadingEngine = engine
+        downloadStatus = "Starting download…"
+        modelDownloadError = nil
+        downloadTask = Task { [weak self] in
+            do {
+                try await VoiceModelStore.download(engine) { [weak self] status in
+                    Task { @MainActor in
+                        guard self?.downloadingEngine == engine else { return }
+                        self?.downloadStatus = status
+                    }
+                }
+                try Task.checkCancellation()
+                self?.refreshModels()
+            } catch {
+                if !Task.isCancelled { self?.modelDownloadError = "\(engine.title): \(error.localizedDescription)" }
+            }
+            self?.downloadingEngine = nil
+            self?.downloadTask = nil
+        }
+    }
+    func cancelModelDownload() {
+        downloadTask?.cancel()
+        downloadStatus = "Cancelling…"
+    }
+    func useAutoScroll() { pause(); speech.releaseModel(); settings.mode = .automatic; errorMessage = nil; scheduleSave() }
 
     private func tick() {
         guard playback.state == .playing || playback.state == .countdown else { return }
@@ -231,7 +274,7 @@ final class AppModel {
             saveStatus = "Saved on this Mac"
         } catch { saveStatus = "Could not save: \(error.localizedDescription)" }
     }
-    func shutdown() { pause(); saveTask?.cancel(); save(); timer?.invalidate() }
+    func shutdown() { downloadTask?.cancel(); pause(); speech.releaseModel(); saveTask?.cancel(); save(); timer?.invalidate() }
 
     static let welcomeScript = """
     Welcome to Teleprompter.

@@ -34,6 +34,7 @@ import Testing
     #expect(recovered.text == "Keep my script")
     #expect(recovered.position == 7)
     #expect(recovered.settings.alignment == .left)
+    #expect(recovered.settings.voiceEngine == .apple)
     #expect(recovered.settings.fontSize == 32)
     #expect(recovered.settings.width == 440)
     #expect(recovered.settings.lineCount == 4)
@@ -42,6 +43,20 @@ import Testing
     #expect(recovered.settings.mode == .voice)
     #expect(recovered.settings.microphoneID == "BuiltInMicrophoneDevice")
     #expect(recovered.settings.shortcuts["play"]?.label == "⌥⌘P")
+}
+
+@Test func voiceEngineSelectionSurvivesRelaunchAndUnknownVersionsFallBackToApple() throws {
+    #expect(PrompterSettings().voiceEngine == .apple)
+    for engine in VoiceEngine.allCases {
+        var settings = PrompterSettings()
+        settings.voiceEngine = engine
+        let data = try JSONEncoder().encode(SavedDraft(text: "Keep my take", settings: settings, position: 17))
+        let decoded = try JSONDecoder().decode(SavedDraft.self, from: data)
+        #expect(decoded.settings.voiceEngine == engine)
+        #expect(decoded.position == 17)
+    }
+    let future = Data(#"{"voiceEngine":"future-model"}"#.utf8)
+    #expect(try JSONDecoder().decode(PrompterSettings.self, from: future).voiceEngine == .apple)
 }
 
 @Test func readingAlignmentSurvivesSavingAndReloading() throws {

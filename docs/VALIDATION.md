@@ -101,6 +101,47 @@ including on-device transcription. The signed build was relaunched and voice
 capture started successfully. Subjective scrolling comfort still needs a live
 read-through; numerical tests are not proof of that experience.
 
+## Optional local transcription engines — September 29
+
+- Apple Speech remains the default, including migration of drafts created before
+  the engine setting existed. Downloading a model never selects it, opens the
+  microphone, or loads its recognition engine.
+- Added Moonshine Small Streaming (MoonshineVoice 0.1.5), Parakeet Realtime EOU
+  120M with 320 ms Core ML steps (FluidAudio 0.17.4), and the compressed 626 MB
+  Whisper Large v3 Turbo variant (WhisperKit 1.1.0). Package versions are pinned
+  in both build systems with checked-in lockfiles; weights remain outside the repository.
+- All three engines downloaded and transcribed the generated 7.73-second fixture
+  using the actual production backend implementations, without microphone or
+  speaker playback. Moonshine and Whisper recovered the complete sentence;
+  Parakeet recovered the sentence after omitting the opening word "Today."
+  This is a small functional fixture, not a general accuracy benchmark.
+- A 38.66-second repeated-speech Whisper run completed across four rolling audio
+  windows. While inference runs, intermediate revisions are replaced by the
+  latest audio; final windows stay ordered. Audio windows and pending inference
+  are bounded. Sustained overload reports an error instead of silently dropping
+  audio. A long cumulative-transcript regression also covers Parakeet-style
+  transcripts, duplicate partials, and manual re-anchoring.
+- Core ML loading for Whisper took approximately 51 seconds on this M5 Pro.
+  A process sample located that delay in Core ML model loading. The selected
+  Whisper model now remains resident while paused for quick retakes; capture and
+  inference stop, and switching models or modes releases it. Initial preparation
+  status remains visible and can be cancelled.
+- The native UI was inspected visually and through accessibility. The model
+  disclosure sits immediately above Keyboard shortcuts. Download progress,
+  cancellation, retry, Download → Use model → Selected, and unchanged Apple
+  selection after downloads were exercised. All three downloaded models remained
+  available after relaunch; selected Parakeet and Whisper settings also persisted.
+- Moonshine, Parakeet, and Whisper reached live microphone listening in the signed app.
+  Selecting another model paused playback, stopped capture, and kept the reading
+  position. Whisper pause/resume returned to listening and countdown without
+  repeating the long Core ML load. Apple Speech was restored as selected with
+  microphone capture off. All 34 tests passed, including the opt-in Apple transcription/matcher
+  integration, engine-setting recovery, and Whisper window/silence tests.
+- The installed model directories occupied approximately 139 MiB (Moonshine),
+  219 MiB (Parakeet), and 608 MiB (Whisper), excluding system Core ML caches.
+  These are disk sizes, not RAM requirements. No 8 GB/16 GB hardware or MacBook
+  Neo performance claim is established by this M5 Pro validation.
+
 ## Remaining live checks
 
 Microphone access is now granted and the live input starts. No claim is made

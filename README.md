@@ -14,7 +14,9 @@ Requires an Apple Silicon Mac, macOS 26+, and Xcode 26+.
 
 The project is configured for the existing Salty Panda Apple Development signing
 team on Chris's Mac. On another Mac, select your own team or **Sign to Run Locally**
-in Signing & Capabilities. No third-party libraries or package installation is needed.
+in Signing & Capabilities. Xcode resolves the pinned MoonshineVoice, FluidAudio,
+and WhisperKit packages automatically. Speech models are optional downloads in
+the app; they are not bundled with the source or app.
 
 The Codex **Run** action and this command build and launch the same app:
 
@@ -65,12 +67,42 @@ Select the microphone you speak into, then start reading. macOS asks for
 microphone access on first use. If denied, enable Teleprompter under
 **System Settings → Privacy & Security → Microphone**.
 
-Recognition uses Apple's `SpeechAnalyzer` and `SpeechTranscriber`, with English
-(US) as the language. Required speech assets download from Apple when missing;
-recognition runs on device after setup. Microphone audio is never saved by
-Teleprompter. There is no account, cloud transcription, or camera permission.
-Live prompting uses Apple's faster partial results to reduce recognition delay.
-The text still needs a confident nearby match before it moves.
+**Apple Speech is the default.** It uses macOS's `SpeechAnalyzer` and
+`SpeechTranscriber` with English (US) and faster partial results. macOS installs
+English assets if they are missing. Existing drafts keep Apple Speech unless you
+explicitly select another engine.
+
+Expand **Transcription models**, immediately above **Keyboard shortcuts**:
+
+1. Click **Download** on any of the three optional models. Progress and Cancel
+   appear in that row. You can keep one, two, or all three downloaded.
+2. When the download finishes, the same button becomes **Use model**. Downloading
+   does not switch engines or start microphone capture.
+3. Click **Use model** to select it. The button becomes **Selected**. Switching
+   pauses playback and keeps your reading position; press **Start reading** to
+   continue. Your selection and downloads survive relaunch.
+4. Choose **Use model** under Apple Speech to return to the built-in engine.
+
+| Option | Local implementation |
+| --- | --- |
+| Apple Speech | macOS on-device service, selected by default |
+| Moonshine Small | English Small Streaming, MoonshineVoice 0.1.5 |
+| Parakeet Realtime | English EOU 120M, 320 ms Core ML variant, FluidAudio 0.17.4 |
+| Whisper Turbo | Large v3 Turbo, compressed 626 MB Core ML variant, WhisperKit 1.1.0 |
+
+Only the selected engine loads during playback. Pausing stops microphone capture
+immediately. Whisper stays loaded between takes for quick resume; switching
+engines or returning to auto-scroll releases it before another model loads.
+Whisper uses bounded audio windows and replaces stale partial decode requests
+with the newest audio; it is heavier than the streaming alternatives. Initial
+Core ML preparation can take time, with status shown before the countdown.
+Try Moonshine or Parakeet first on smaller Macs. Physical 8 GB/16 GB machines,
+including MacBook Neo, still need recording-load qualification.
+
+All recognition runs on this Mac after setup. Downloads need internet; audio is
+never uploaded or saved by Teleprompter. There is no account, cloud transcription,
+or camera permission. Each engine feeds the same nearby-script matcher and
+continuous scrolling controller.
 
 The matcher compares nearby script words, tolerates small omissions, and handles
 revised partial transcripts. Two exact words near your current position can
@@ -117,7 +149,9 @@ swift test
 ```
 
 The focused suite covers timing, countdowns, pause/resume, finish behavior,
-paragraph navigation, speech matching, local recovery, and notch placement.
+paragraph navigation, speech matching (including long cumulative transcripts),
+model-selection persistence, bounded Whisper audio windows, local recovery,
+and notch placement.
 An optional integration test runs real on-device recognition against generated
 speech (it may download Apple's English assets):
 
@@ -136,18 +170,49 @@ swiftc Core/Script.swift Core/SpeechAlignment.swift script/benchmark_speech.swif
 artifacts/benchmark_speech artifacts/voice-fixture-16k.caf
 ```
 
+To exercise the actual downloadable engines without microphone or speaker use:
+
+```sh
+swift build --product VoiceEngineCheck
+ffmpeg -i artifacts/voice-fixture.caf -ar 16000 -ac 1 artifacts/voice-fixture-16k.wav
+.build/debug/VoiceEngineCheck moonshine artifacts/voice-fixture-16k.wav --download
+.build/debug/VoiceEngineCheck parakeet artifacts/voice-fixture-16k.wav --download
+.build/debug/VoiceEngineCheck whisper artifacts/voice-fixture-16k.wav --download
+```
+
+Omit `--download` to use only the already-installed model. The harness prints
+partial and final transcripts, streams at real-time speed, and flushes trailing
+silence. It uses the same backend implementations as the app. Fixture accuracy
+and this Mac's timings are not measurements on an 8 GB Mac or proof of Cap
+recording performance.
+
 `Core/` contains the shared timing, matching, placement, and persistence logic.
 `App/` owns the SwiftUI editor, nonactivating AppKit panel, global shortcuts,
-and microphone/recognition lifecycle. No microphone input is started by tests.
+and microphone/recognition lifecycle. `Speech/` implements local model downloads
+and the three optional engines. No microphone input is started by tests.
 
 After adding a Swift source file, regenerate the checked-in Xcode project with
 `python3 script/generate_project.py`. The generator requires only Python's
 standard library.
 
 Draft storage: `~/Library/Application Support/Teleprompter/draft.json`.
+Model storage: `~/Library/Application Support/Teleprompter/Models/`.
+Incomplete downloads are not offered for selection; retry **Download** after a
+failure or cancellation. Download receipts check that installed files remain
+present and complete before use.
 Unreadable drafts are backed up before new autosaves; if backup fails, autosave
 is suspended and the editor offers export. Generated media and build outputs
 are ignored by Git.
 
 See [validation notes](docs/VALIDATION.md) for verified behavior and outstanding
 live recording checks.
+
+## Upstream projects
+
+- [Moonshine Swift](https://github.com/moonshine-ai/moonshine-swift)
+- [FluidAudio](https://github.com/FluidInference/FluidAudio) and
+  [Parakeet streaming models](https://huggingface.co/FluidInference/parakeet-realtime-eou-120m-coreml)
+- [WhisperKit](https://github.com/argmaxinc/argmax-oss-swift) and
+  [Whisper Core ML models](https://huggingface.co/argmaxinc/whisperkit-coreml)
+
+See the upstream projects and model cards for their respective licenses.

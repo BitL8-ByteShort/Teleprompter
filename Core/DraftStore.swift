@@ -11,13 +11,14 @@ struct PrompterSettings: Codable, Equatable, Sendable {
     var alignment: ReadingAlignment = .left
     var wpm: Double = 130
     var mode: ScrollMode = .automatic
+    var voiceEngine: VoiceEngine = .apple
     var microphoneID: String = ""
     var shortcuts: [String: ShortcutBinding] = ShortcutBinding.defaults
 
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case fontSize, width, lineCount, opacity, alignment, wpm, mode, microphoneID, shortcuts
+        case fontSize, width, lineCount, opacity, alignment, wpm, mode, voiceEngine, microphoneID, shortcuts
     }
 
     init(from decoder: Decoder) throws {
@@ -29,6 +30,7 @@ struct PrompterSettings: Codable, Equatable, Sendable {
         alignment = try values.decodeIfPresent(ReadingAlignment.self, forKey: .alignment) ?? .left
         wpm = try values.decodeIfPresent(Double.self, forKey: .wpm) ?? 130
         mode = try values.decodeIfPresent(ScrollMode.self, forKey: .mode) ?? .automatic
+        voiceEngine = (try values.decodeIfPresent(String.self, forKey: .voiceEngine)).flatMap(VoiceEngine.init(rawValue:)) ?? .apple
         microphoneID = try values.decodeIfPresent(String.self, forKey: .microphoneID) ?? ""
         shortcuts = try values.decodeIfPresent([String: ShortcutBinding].self, forKey: .shortcuts) ?? ShortcutBinding.defaults
     }
