@@ -9,6 +9,20 @@ Other people currently have no permission to alter this repository. Contribution
 are welcome, but outside write access should wait until the branch rules below
 are active.
 
+## When the repository becomes public
+
+Public visibility lets people read and fork the code; it does not give them
+permission to change our repository. Keep the owner as the only person with write
+access. Contributors can work in their own forks and submit pull requests for
+the owner to review and merge. See
+[GitHub's access documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/access-to-repositories).
+
+GitHub Free supports protection for public repositories, so no Pro subscription
+is needed for that release. Once publication is authorized and the repository
+becomes public, run the command below and verify active protection before
+granting any additional write access. The prepared setup works for both public
+and private repositories; it does not publish the repository itself.
+
 ## Main branch rules
 
 **Branch protection is not enabled.** GitHub rejected ruleset access with
@@ -26,7 +40,8 @@ The prepared ruleset in `.github/main-ruleset.json` requires contributors to:
 The owner retains an explicit bypass. `.github/CODEOWNERS` names the owner as
 reviewer for every file; that file alone does not block pushes or merges.
 
-After enabling a supported GitHub plan, activate and verify the saved rules:
+When the repository is public, or has a plan supporting private rulesets,
+activate and verify the saved rules:
 
 ```sh
 python3 script/protect_main.py

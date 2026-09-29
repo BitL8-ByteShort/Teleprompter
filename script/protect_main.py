@@ -31,8 +31,8 @@ def api(endpoint, method="GET", body=None):
 def main():
     desired = json.loads((ROOT / ".github/main-ruleset.json").read_text())
     repository = api(f"repos/{REPO}")
-    if not repository["private"] or not repository["permissions"].get("admin"):
-        raise RuntimeError("Expected the private Teleprompter repo and an administrator account.")
+    if repository.get("full_name") != REPO or not repository["permissions"].get("admin"):
+        raise RuntimeError("Expected the Teleprompter repo and an administrator account.")
     if repository["owner"]["id"] != desired["bypass_actors"][0]["actor_id"]:
         raise RuntimeError("Repository ownership changed; review the saved bypass before applying.")
 
