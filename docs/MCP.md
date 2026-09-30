@@ -1,8 +1,8 @@
 # Add scripts with MCP
 
-Requires Teleprompter **1.2.0 (build 5) or later**. The first public preview DMG,
-version 1.1.2, doesn't have this feature. Build the current source with
-`./script/build_and_run.sh --verify`.
+Requires Teleprompter **1.2.0 or later**. Install the
+[current public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.0-public-preview.1)
+or build the source with `./script/build_and_run.sh --verify`.
 
 ## Connect your agent
 
@@ -10,10 +10,10 @@ The app includes its own MCP server. Run the executable inside the app bundle
 with `--mcp`; no Node.js, Python, or separate server install is needed to use it.
 The app and your agent must run under the same Mac user account.
 
-For Codex, replace the path with the full path to your built app:
+For Codex, with the app installed in Applications:
 
 ```sh
-codex mcp add teleprompter -- "/absolute/path/to/Teleprompter/build/Build/Products/Debug/Teleprompter.app/Contents/MacOS/Teleprompter" --mcp
+codex mcp add teleprompter -- "/Applications/Teleprompter.app/Contents/MacOS/Teleprompter" --mcp
 ```
 
 Start a new agent session so it loads the connection. To disconnect it later:
@@ -28,16 +28,17 @@ For clients that use an `mcpServers` JSON configuration:
 {
   "mcpServers": {
     "teleprompter": {
-      "command": "/absolute/path/to/Teleprompter/build/Build/Products/Debug/Teleprompter.app/Contents/MacOS/Teleprompter",
+      "command": "/Applications/Teleprompter.app/Contents/MacOS/Teleprompter",
       "args": ["--mcp"]
     }
   }
 }
 ```
 
-Once an MCP-enabled version is installed in Applications, the command can be
-`/Applications/Teleprompter.app/Contents/MacOS/Teleprompter`. Check the version
-under **Teleprompter → About Teleprompter** before changing the path.
+If you rename the app or build from source, replace the command with your app
+bundle's full executable path. For a source build, that's
+`/absolute/path/to/Teleprompter/build/Build/Products/Debug/Teleprompter.app/Contents/MacOS/Teleprompter`.
+Check the version under **Teleprompter → About Teleprompter** before connecting.
 
 Discovery doesn't open the app. The first script request opens it in the
 background if needed. Closing the MCP connection stops the helper; the normal

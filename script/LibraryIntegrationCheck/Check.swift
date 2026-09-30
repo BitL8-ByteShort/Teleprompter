@@ -26,6 +26,10 @@ enum VoiceModelStore {
 
 @main struct LibraryIntegrationCheck {
     @MainActor static func main() async throws {
+        if CommandLine.arguments.contains("--overlay-only") {
+            try await checkOverlay()
+            return
+        }
         if let index = CommandLine.arguments.firstIndex(of: "--mcp-fixture") {
             try await runMCPFixture(folder: URL(fileURLWithPath: CommandLine.arguments[index + 1]))
             return

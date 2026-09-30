@@ -58,7 +58,6 @@ final class OverlayController {
     }
 
     func update() {
-        guard model.overlayVisible else { panel.orderOut(nil); return }
         let screen = NSScreen.screens.first { screen in
             guard let id = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else { return false }
             return CGDisplayIsBuiltin(id.uint32Value) != 0
@@ -73,6 +72,13 @@ final class OverlayController {
             + ReadingPanelMetrics.controlsHeight + ReadingPanelMetrics.bottomPadding
         let frame = OverlayGeometry.frame(screen: screen.frame, safeTop: screen.safeAreaInsets.top, visibleTop: screen.visibleFrame.maxY, width: model.settings.width, height: height)
         panel.setFrame(frame, display: true)
+        // Cap 0.6 resolves exclusions from on-screen window IDs at recording start.
+        // Ordering this window out makes a later reveal absent from that snapshot.
+        // Keep the same clear window ordered; Hide removes all content, shadow,
+        // and mouse handling so it remains invisible and clicks pass through.
+        panel.contentView?.isHidden = !model.overlayVisible
+        panel.ignoresMouseEvents = !model.overlayVisible
+        panel.hasShadow = model.overlayVisible
         panel.orderFrontRegardless()
     }
 }

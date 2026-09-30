@@ -253,7 +253,7 @@ struct RecordingSetupView: View {
             Text("Cap · recommended").font(.headline)
             Text("1. Open Teleprompter and show the reading panel.\n2. In Cap, open Settings → General → Excluded windows.\n3. Add Teleprompter. Leave its reading panel open before starting each take.\n4. Record a short Studio sample with your camera and microphone, then check the saved video.")
                 .lineSpacing(7)
-            Text("Cap applies the exclusion to this app. Keep the app running during a take; restarting it creates new windows and requires a new recording.")
+            Text("Cap checks the app's windows when recording starts. Show the panel before starting Cap. You can then hide and show it using Teleprompter's controls. If you launch or restart Teleprompter after Cap starts, stop Cap and start a new take. Re-adding the exclusion during a take won't fix that recording.")
                 .font(.callout).foregroundStyle(.secondary)
             Divider()
             Text("OBS & macOS capture").font(.headline)

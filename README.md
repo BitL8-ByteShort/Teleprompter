@@ -6,16 +6,16 @@ Read your script close to the camera while you record. Teleprompter is a native
 Mac app built for YouTube videos, with steady auto-scroll and voice-follow that
 runs on your Mac. Use Cap, OBS, or your usual recorder for the video.
 
-**First public preview: version 1.1.2 (build 4).** This is the first release for
-public testing, following private development builds. Expect updates as people
+**Public preview: version 1.2.0 (build 6).** Our first public release was 1.1.2.
+Expect updates as people
 try it on more Macs. It isn't on the Mac App Store. The banner above is an
 illustration of the reading experience.
 
-[Download the first public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1)
+[Download the public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.0-public-preview.1)
 · [Report a bug](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml)
 
-**Source on `main`: 1.2.0 (build 5).** This adds local MCP access for agents.
-Build from source to use it; the published 1.1.2 installer doesn't include MCP.
+**What's new:** local MCP access for agents and a fix for Cap recording the
+prompter when it starts hidden and you reveal it during a take.
 
 ## What it does
 
@@ -37,7 +37,7 @@ Build from source to use it; the published 1.1.2 installer doesn't include MCP.
 Requires **macOS 26 or later**, **Apple Silicon**, and an open built-in MacBook
 screen for the reading panel. Xcode is only needed if you're building from source.
 
-1. Download [Teleprompter 1.1.2 for Apple Silicon](https://github.com/BitL8-ByteShort/Teleprompter/releases/download/v1.1.2-public-preview.1/Teleprompter-1.1.2-arm64.dmg) from the [first public preview release](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1).
+1. Download [Teleprompter 1.2.0 for Apple Silicon](https://github.com/BitL8-ByteShort/Teleprompter/releases/download/v1.2.0-public-preview.1/Teleprompter-1.2.0-arm64.dmg) from the [public preview release](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.0-public-preview.1).
 2. Open it and drag **Teleprompter.app** into **Applications**.
 3. Eject the disk image, then open Teleprompter from Applications.
 4. Paste your script and choose **Start reading**.
@@ -46,13 +46,13 @@ On first launch, auto-scroll is selected and playback is stopped. Optional speec
 models download separately; they aren't bundled into the installer.
 
 See [packaging notes](docs/PACKAGING.md) for signing, notarization, and rebuilding
-an installer. The published 1.1.2 app is signed by Salty Panda LLC and notarized by Apple;
+an installer. The published 1.2.0 app is signed by Salty Panda LLC and notarized by Apple;
 see [the release's malware-check evidence](docs/DISTRIBUTION_SECURITY.md).
 
 ## Preview status and bug reports
 
-This first public preview includes auto-scroll, voice-follow, local model
-downloads, and saved scripts. It has been tested on the development Mac;
+This public preview includes auto-scroll, voice-follow, local model
+downloads, saved scripts, and MCP access. It has been tested on the development Mac;
 performance while recording on 8 GB and 16 GB Macs still needs testing. Whisper
 can take time to prepare on first use. Check a short saved recording to confirm
 your recorder excludes the panel before recording a full take.
@@ -161,16 +161,17 @@ An agent can save a named script directly into **My Scripts**. Adding one keeps
 your current script and take running. The editor shows which script the agent
 added. Opening a script is a separate action and pauses playback.
 
-Build version 1.2.0 or later, then point your MCP client at the app's executable
-with `--mcp`. For Codex, replace the example path with your checkout's full path:
+Install version 1.2.0 or later, then point your MCP client at the app's executable
+with `--mcp`. For a standard install in Applications:
 
 ```sh
-codex mcp add teleprompter -- "/absolute/path/to/Teleprompter/build/Build/Products/Debug/Teleprompter.app/Contents/MacOS/Teleprompter" --mcp
+codex mcp add teleprompter -- "/Applications/Teleprompter.app/Contents/MacOS/Teleprompter" --mcp
 ```
 
 Start a new agent session after adding the connection. Then ask it to save your
 script in Teleprompter. You can also ask it to list scripts or open one by ID.
 The app opens in the background on the first script request if it isn't running.
+If you rename the app or build from source, use that app bundle's full path.
 Quit any older app copy before using the new build.
 
 | Tool | What it does |
@@ -196,12 +197,21 @@ recording:
 
 1. Open Teleprompter and show the reading panel.
 2. In Cap, open **Settings → General → Excluded windows** and add **Teleprompter**.
-3. Make a short Studio recording with your screen, camera, and microphone.
-4. Check the saved video for panel exclusion and intact audio before a full take.
+3. Start a new Cap Studio recording, then start reading in Teleprompter.
+4. Check a short saved video for panel exclusion and intact audio before a full take.
 
-Keep Teleprompter running during the recording. If you restart it, start a new
-recording so Cap can resolve the new windows. The app's bundle identifier is
-`com.bitl8byteshort.Teleprompter`.
+**Open Teleprompter before starting Cap's recording.** Cap 0.6.0 resolves the
+exclusion from windows present when the take starts. Adding an app to the list
+doesn't automatically exclude windows that appear later. If you launch or
+restart Teleprompter during a take, stop Cap and start a new recording. Re-adding
+the exclusion during that take won't repair it.
+
+In 1.2.0, **Show / Hide Prompter** conceals the text while keeping the same clear
+window available to Cap. The hidden panel has no shadow and lets clicks through.
+You can start with it hidden using Teleprompter's controls, then reveal it with
+Play during the take. This path was verified in a saved Cap Studio recording
+on the development Mac. Showing the panel before recording remains the easiest
+setup check. The app's bundle identifier is `com.bitl8byteshort.Teleprompter`.
 
 For **OBS**, use a capture source that excludes the panel, such as the specific
 app/window you're demonstrating. For **macOS screen recording**, select the

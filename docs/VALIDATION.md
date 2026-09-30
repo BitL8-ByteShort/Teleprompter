@@ -1,5 +1,47 @@
 # Validation — September 29, 2026
 
+## Cap exclusion fix: 1.2.0 (build 6)
+
+- Inspected the user's failing exported video and Cap Desktop 0.6.0 logs on
+  macOS 26.6.2. The saved bundle identifier was correct. Cap excluded the editor
+  and another app window, but its starting snapshot omitted the reading panel.
+  A hidden panel was absent from the on-screen window list. Cap's versioned
+  source resolves app exclusions to visible window IDs at recording start.
+- A new Studio take with the panel already visible included its window ID and
+  excluded it from the saved display track. Hiding and showing it during that
+  take reused the same ID and remained excluded.
+- Changed Hide to conceal the panel's entire content view, remove its shadow,
+  and ignore mouse events, while keeping the clear, nonopaque window ordered.
+  No recorder code or capture-protection APIs were changed.
+- All 12 native AppKit checks passed using isolated script storage. They cover
+  on-screen enumeration while hidden, stable window ID after reveal, clear
+  background, click-through behavior, hidden layout changes, unchanged script
+  and position, stopped playback, and keyboard-focus preservation.
+- The signed Debug app built and launched. In a fresh Cap Studio Window-mode
+  recording, the prompter started hidden. Cap resolved reading-panel ID 22404
+  before capture. Play then revealed it and ran countdown and auto-scroll.
+  Inspected saved display-track frames after reveal; the panel was excluded.
+  The built-in camera was enabled; microphone and system audio were off. This
+  verifies exclusion for this Mac and Cap version, not audio or speech quality.
+- Launching or restarting Teleprompter after Cap starts still requires stopping
+  and starting a new recording. Setup instructions now explain this limitation.
+  No claim of universal recorder invisibility is made.
+- Release archive and Developer ID export succeeded. Apple's notarization ticket
+  was attached and validated, the strict signature check passed, and Gatekeeper
+  accepted the app as `Notarized Developer ID` from Salty Panda LLC. The DMG
+  filesystem checksum verified and all 79 license documents matched the bundle.
+- All 19 MCP stdio integration checks passed again using the actual signed
+  Release executable and an isolated AppModel host.
+- Mounted and verified the DMG's enclosed app, then installed and launched the
+  signed app as `/Applications/Teleprompter for Mac.app` to preserve a different
+  vendor's existing `Teleprompter.app`. The real library, settings, and original
+  reading position were restored. The installed setup sheet displayed the
+  corrected instructions; the app was left stopped with the prompter hidden.
+- Two attempts to export Cap's 54-second project remained at “Preparing export”
+  and were canceled, including a retry after restarting Cap. No composed export
+  is claimed. Exclusion evidence above comes from the saved native display track
+  and capture logs. Microphone/audio and a full spoken take remain live checks.
+
 ## Local MCP: source 1.2.0 (build 5)
 
 - Xcode Debug build succeeded and the exact app bundle launched. The stdio
