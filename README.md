@@ -128,6 +128,9 @@ Change these in **Keyboard shortcuts**. Conflicts are reported in the editor.
 
 ## Recording with Cap or OBS
 
+Get Cap from [cap.so](https://cap.so), or see its source code and setup guide in
+the [Cap GitHub repository](https://github.com/CapSoftware/Cap).
+
 Teleprompter doesn't record video. To keep its panel out of a **Cap Desktop 0.6.0**
 recording:
 
