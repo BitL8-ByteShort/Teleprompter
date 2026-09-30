@@ -1,5 +1,29 @@
 # Validation — September 29, 2026
 
+## First public preview: 1.1.2 (build 4)
+
+The first public preview uses the verified 1.1.2 app build. Public launch changes
+the documentation, issue templates, and installer instructions; it does not
+change the app executable or bundled models.
+
+- The bug-report form's YAML and six required fields validated. Reports ask for
+  app version/build, Mac and macOS details, mode/engine, reproduction steps,
+  expected behavior, and actual behavior.
+- The refreshed DMG was mounted and its public-preview instructions and report
+  URL inspected. All 79 license documents matched the inventory. The app inside
+  passed strict signature verification, notarization-ticket validation, and
+  Gatekeeper assessment (`accepted`, `Notarized Developer ID`).
+- Public installer SHA-256:
+  `dc4414e9fdde5befd8ecf65f97d6729c4953d4c34b6d693866097b1909167f1b`.
+- The repository was made public and GitHub confirmed the active main ruleset
+  (ID 24219843), including owner review, stale-approval dismissal, review-thread
+  resolution, force-push protection, and deletion protection. Only the owner
+  has an explicit bypass. Old private test releases were retained as drafts.
+
+Earlier automated and local UI evidence is recorded below. The 8 GB/16 GB
+recording-load and saved Cap-recording checks remain open; this public preview
+does not claim those results.
+
 Environment: Apple Silicon MacBook, macOS 26.6.2, Xcode 27.0, built-in Retina
 display plus an external 1080p monitor; Cap Desktop 0.6.0.
 
