@@ -23,6 +23,7 @@ final class AppModel {
     var shortcutError: String?
     var recordingShortcut: String?
     var saveStatus = "Saved on this Mac"
+    var agentStatus = ""
     var microphones: [Microphone] = []
     var downloadedEngines: Set<VoiceEngine> = [.apple]
     var downloadingEngine: VoiceEngine?
@@ -318,28 +319,79 @@ final class AppModel {
     func trashScript(_ id: UUID) { changeLibrary { $0.trash(id) } }
     func restoreScript(_ id: UUID) { changeLibrary { $0.restore(id) } }
 
-    private func changeLibrary(_ change: (inout ScriptLibrary) -> Void) {
+    @discardableResult private func changeLibrary(_ change: (inout ScriptLibrary) -> Void) -> Bool {
         saveTask?.cancel()
         // Pause also cancels manual-scroll resume and invalidates in-flight speech.
         guard pause() else {
             libraryError = "Your current script could not be saved, so it is still open. \(saveStatus)"
-            return
+            return false
         }
         let previousID = library.activeID
         do {
             try store.update(&library, change: change)
             if previousID != library.activeID {
-                text = library.activeScript?.text ?? ""
-                script = Script(text)
-                playback = Playback()
-                playback.seek(library.activeScript?.position ?? 0, wordCount: script.tokens.count)
-                selection = NSRange(location: 0, length: 0)
-                alignment.reset()
-                rebuildLayout()
-                overlayChanged?()
+                loadActiveScript()
             }
+            return true
         } catch {
             libraryError = "That change could not be saved. Your current script is still open. \(error.localizedDescription)"
+            return false
+        }
+    }
+
+    private func loadActiveScript() {
+        text = library.activeScript?.text ?? ""
+        script = Script(text)
+        playback = Playback()
+        playback.seek(library.activeScript?.position ?? 0, wordCount: script.tokens.count)
+        selection = NSRange(location: 0, length: 0)
+        alignment.reset()
+        rebuildLayout()
+        overlayChanged?()
+    }
+
+    func handleAutomation(_ request: ScriptAutomationRequest) -> ScriptAutomationResponse {
+        do {
+            try request.validate()
+            guard !protectUnreadableLibrary else {
+                throw ScriptAutomationError.unavailable("Agent access is disabled to protect an unreadable library. Export your edits first.")
+            }
+            switch request.operation {
+            case .add:
+                let currentText = text, position = playback.position, currentSettings = settings
+                let previousID = library.activeID
+                var createdID: UUID?
+                try store.update(&library) {
+                    $0.updateActive(text: currentText, position: position)
+                    $0.settings = currentSettings
+                    createdID = $0.create(title: request.title!, text: request.text!, select: false)
+                }
+                saveTask?.cancel()
+                if previousID != library.activeID { loadActiveScript() }
+                saveStatus = "Saved on this Mac"
+                let created = library.scripts.first { $0.id == createdID }!
+                agentStatus = "Added by agent: \(created.title)"
+                return ScriptAutomationResponse(success: true, scripts: [ScriptAutomationItem(created)], activeID: library.activeID, running: running)
+            case .list:
+                let matches = library.matching(query: request.query ?? "")
+                let offset = min(request.offset ?? 0, matches.count)
+                let end = min(offset + (request.limit ?? 50), matches.count)
+                return ScriptAutomationResponse(success: true, scripts: matches[offset..<end].map(ScriptAutomationItem.init),
+                                                activeID: library.activeID, running: running, totalCount: matches.count,
+                                                nextOffset: end < matches.count ? end : nil)
+            case .open:
+                guard let item = library.scripts.first(where: { $0.id == request.scriptID && $0.trashedAt == nil }) else {
+                    throw ScriptAutomationError.missingScript
+                }
+                // Explicit open pauses even when this script is already selected.
+                guard changeLibrary({ $0.select(item.id) }) else {
+                    throw ScriptAutomationError.unavailable(libraryError ?? saveStatus)
+                }
+                agentStatus = "Opened by agent: \(item.title)"
+                return ScriptAutomationResponse(success: true, scripts: [ScriptAutomationItem(library.activeScript!)], activeID: library.activeID, running: running)
+            }
+        } catch {
+            return .failure(error.localizedDescription)
         }
     }
     func shutdown() { downloadTask?.cancel(); pause(); speech.releaseModel(); saveTask?.cancel(); save(); timer?.invalidate() }

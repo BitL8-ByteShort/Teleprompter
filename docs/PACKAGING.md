@@ -37,12 +37,15 @@ No private key or Apple password is stored in the repository.
 
 Outputs:
 
-- `dist/Teleprompter-1.1.2-arm64.dmg`
-- `dist/Teleprompter-1.1.2-arm64.dmg.sha256`
+- `dist/Teleprompter-<version>-arm64.dmg`
+- `dist/Teleprompter-<version>-arm64.dmg.sha256`
 - Build, export, and notarization logs under `build/packaging/`
 
-The filename follows the version in `App/Info.plist`. Generated installers,
-archives, models, and build logs are ignored by Git. Installers can be attached
+The filename and install instructions follow the exported bundle's version
+and build, set in `App/Info.plist`.
+The current source is 1.2.0 (build 5); this does not replace the published 1.1.2
+preview until a new signed, notarized installer is built and uploaded.
+Generated installers, archives, models, and build logs are ignored by Git. Installers can be attached
 to this repository's GitHub releases. Keep preview releases marked as prereleases
 and include a link to the [bug-report form](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml).
 

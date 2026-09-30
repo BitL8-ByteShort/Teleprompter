@@ -46,7 +46,10 @@ struct EditorView: View {
                         }.frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     HStack {
-                        Text(model.saveStatus).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(model.saveStatus)
+                            if !model.agentStatus.isEmpty { Text(model.agentStatus) }
+                        }.font(.caption).foregroundStyle(.secondary).lineLimit(2)
                         Spacer()
                         Button("Read from cursor", systemImage: "text.cursor") { model.readFromSelection() }
                             .disabled(model.script.tokens.isEmpty)

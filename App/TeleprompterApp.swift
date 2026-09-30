@@ -1,6 +1,5 @@
 import SwiftUI
 
-@main
 struct TeleprompterApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @Environment(\.openWindow) private var openWindow
@@ -53,8 +52,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotkeys: HotkeyManager?
     private var statusItem: NSStatusItem?
     private var terminationSource: DispatchSourceSignal?
+    private var automation: ScriptAutomationSocketServer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        do {
+            automation = try ScriptAutomationSocketServer { [weak self] request in
+                self?.model.handleAutomation(request) ?? .failure("Teleprompter is closing.")
+            }
+        } catch { model.agentStatus = "Agent access unavailable: \(error.localizedDescription)" }
         overlay = OverlayController(model: model)
         hotkeys = HotkeyManager(model: model)
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -67,7 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         item.menu = menu
         statusItem = item
-        NSApp.activate(ignoringOtherApps: true)
+        if !CommandLine.arguments.contains("--agent-background") { NSApp.activate(ignoringOtherApps: true) }
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(suspend), name: NSWorkspace.willSleepNotification, object: nil)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(suspend), name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(windowClosing(_:)), name: NSWindow.willCloseNotification, object: nil)
@@ -77,7 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         source.resume()
         terminationSource = source
     }
-    func applicationWillTerminate(_ notification: Notification) { model.shutdown() }
+    func applicationWillTerminate(_ notification: Notification) { automation?.stop(); model.shutdown() }
     func applicationDidHide(_ notification: Notification) { model.pause() }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     @objc private func showEditor() { openEditor?() }

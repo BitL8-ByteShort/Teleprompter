@@ -81,6 +81,7 @@ spctl --assess --type execute -vv "$APP_BUNDLE"
 python3 "$TASK_ROOT/script/verify_licenses.py" --bundle "$APP_BUNDLE"
 
 VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$INFO_PLIST")
+BUILD_VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$INFO_PLIST")
 DMG_NAME="Teleprompter-$VERSION-arm64.dmg"
 DMG_PATH="$DIST_ROOT/$DMG_NAME"
 STAGING_ROOT=$(mktemp -d "$PACKAGING_ROOT/dmg.XXXXXX")
@@ -90,7 +91,7 @@ ln -s /Applications "$STAGING_ROOT/Applications"
 cp "$TASK_ROOT/LICENSE" "$STAGING_ROOT/LICENSE.txt"
 cp "$TASK_ROOT/THIRD_PARTY_NOTICES.md" "$STAGING_ROOT/THIRD_PARTY_NOTICES.md"
 ditto "$TASK_ROOT/Core/Licenses" "$STAGING_ROOT/Licenses"
-cat > "$STAGING_ROOT/Install.txt" <<'TXT'
+cat > "$STAGING_ROOT/Install.txt" <<TXT
 Install Teleprompter
 
 1. Drag Teleprompter.app into Applications.
@@ -107,11 +108,11 @@ License terms and complete third-party notices are included on this disk image
 and inside the app. Open Help > Licenses & Credits to read them. Optional model
 downloads also receive their own license documents beside the model files.
 
-First public preview: Teleprompter 1.1.2 (build 4).
-This is the first release for public testing; updates will follow.
+Teleprompter $VERSION (build $BUILD_VERSION).
+Preview release for public testing. Report bugs using the link below.
 
 Downloads and release notes:
-https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1
+https://github.com/BitL8-ByteShort/Teleprompter/releases
 
 Report bugs:
 https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml

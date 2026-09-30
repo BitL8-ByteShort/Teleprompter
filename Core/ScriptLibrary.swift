@@ -42,10 +42,10 @@ struct ScriptLibrary: Codable, Equatable, Sendable {
         }
     }
 
-    @discardableResult mutating func create(title: String = "Untitled script", text: String = "") -> UUID {
+    @discardableResult mutating func create(title: String = "Untitled script", text: String = "", select: Bool = true) -> UUID {
         let item = SavedScript(title: uniqueTitle(Self.cleanTitle(title)), text: text)
         scripts.append(item)
-        activeID = item.id
+        if select { activeID = item.id }
         return item.id
     }
 

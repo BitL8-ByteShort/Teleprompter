@@ -97,6 +97,8 @@ Generated media and build outputs are ignored by Git.
 editor with silent speech doubles and temporary storage. It checks saving on
 switch, playback/manual-resume cancellation, cancellation during speech startup,
 import as a new script, cross-script Undo isolation, failed writes, and relaunch.
+It also checks agent additions during playback, gesture resume, and voice
+startup; explicit agent opens; empty-library recovery; and blocked writes.
 It does not test actual speech recognition. Add `--snapshot` to render the real
 SwiftUI workspace to `build/script-library/library-preview.png`.
 
@@ -107,3 +109,30 @@ live recording checks.
 AppKit bitmap previews can omit native glass/sidebar layers. Inspect the actual
 running window when checking appearance; a white region in the bitmap alone
 isn't evidence of a missing control.
+
+## Local MCP architecture
+
+`App/TeleprompterMain.swift` chooses GUI launch or stdio MCP mode before creating
+the SwiftUI app. `Core/MCPProtocol.swift` handles newline-framed JSON-RPC,
+initialize/initialized clients, stateless discovery, and three fixed tools.
+Only protocol messages go to stdout. No third-party runtime is required.
+
+`Core/LocalScriptSocket.swift` connects the helper to the GUI over
+`/tmp/teleprompter-mcp-<uid>/scripts.sock`. The directory is 0700, the socket is
+0600, and both ends check the peer's UID. A lifetime lock prevents two GUI
+instances from owning the endpoint. Requests are limited to 1 MiB, four
+concurrent connections, and five-second socket I/O waits. Socket work runs off
+the main actor; `AppModel.handleAutomation` owns the atomic saves on the main
+actor. Agent additions keep selection and playback intact. Explicit opens use
+the existing save/pause/selection path.
+
+After building the app and running the library integration check:
+
+```sh
+python3 script/check_mcp.py
+```
+
+This independent stdio client launches the actual app executable in `--mcp`
+mode against an isolated real AppModel fixture. `--mcp-socket` overrides the
+endpoint for the fixture and disables automatic GUI launch; normal clients
+should use only `--mcp`. See [MCP setup](MCP.md) for client configuration.

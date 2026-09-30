@@ -1,5 +1,36 @@
 # Validation — September 29, 2026
 
+## Local MCP: source 1.2.0 (build 5)
+
+- Xcode Debug build succeeded and the exact app bundle launched. The stdio
+  helper reports version 1.2.0 and doesn't initialize the GUI during discovery.
+- All 15 focused Swift tests passed: six MCP tests and nine library tests.
+  They cover tool discovery, initialization, stateless requests, invalid input,
+  save errors, unique names, selection preservation, socket permissions,
+  request round trips, and the single-listener lock.
+- All 33 AppModel/AppKit integration assertions passed with isolated storage
+  and silent speech doubles. Agent additions preserve playback, reading
+  position, pending scroll resume, and voice startup. Explicit opens pause;
+  missing scripts don't disturb playback. Failed writes retain the in-memory
+  library, and an empty or unreadable library is handled safely.
+- All 19 independent stdio integration checks passed using the actual app
+  executable and an isolated real AppModel host. Checks include Unicode and
+  multiline content, search/pagination, Trash exclusion, a real filesystem save
+  failure, malformed-input recovery, EOF shutdown, and saved content after
+  host shutdown. No microphone capture was used.
+- With the normal GUI stopped, the MCP helper automatically launched the new
+  app on its first script request. It added **Agent connection demo** to the real
+  My Scripts library, preserved the previous active script and settings, and
+  shut down cleanly. The actual native UI showed the new sidebar item, the
+  original editor selection, and the agent-add status message.
+- Registered the local executable as the enabled `teleprompter` MCP server in
+  Codex and verified its saved command/arguments. New agent sessions load that
+  connection; no cloud agent transcription or microphone controls were added.
+- The published, notarized 1.1.2 preview DMG is unchanged. MCP is available in
+  the source and local development build; a new installer needs its own signing,
+  notarization, and release evidence. Speech quality and recorder exclusion
+  were not requalified by these MCP checks.
+
 ## First public preview: 1.1.2 (build 4)
 
 The first public preview uses the verified 1.1.2 app build. Public launch changes

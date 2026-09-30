@@ -26,6 +26,10 @@ enum VoiceModelStore {
 
 @main struct LibraryIntegrationCheck {
     @MainActor static func main() async throws {
+        if let index = CommandLine.arguments.firstIndex(of: "--mcp-fixture") {
+            try await runMCPFixture(folder: URL(fileURLWithPath: CommandLine.arguments[index + 1]))
+            return
+        }
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: folder) }
         let app = NSApplication.shared
@@ -98,6 +102,7 @@ enum VoiceModelStore {
         check(reopened.library.activeID == second && reopened.text == "Unsaved text must stay here", "Relaunch restores last script and latest edits")
         check(!reopened.running, "Relaunch is stopped")
         reopened.shutdown()
+        try await checkAutomation(folder: folder.appendingPathComponent("automation"))
         if CommandLine.arguments.contains("--snapshot") {
             let preview = AppModel(storageFolder: folder.appendingPathComponent("preview"))
             let view = NSHostingView(rootView: ScriptWorkspaceView(model: preview))
@@ -123,7 +128,82 @@ enum VoiceModelStore {
             preview.shutdown()
             window.orderOut(nil)
         }
-        print("Library integration checks passed (playback, gestures, voice cancellation, import, undo, failed writes, relaunch).")
+        print("Library integration checks passed (playback, gestures, voice cancellation, import, undo, failed writes, relaunch, MCP).")
+    }
+
+    @MainActor static func runMCPFixture(folder: URL) async throws {
+        NSApplication.shared.setActivationPolicy(.accessory)
+        let model = AppModel(storageFolder: folder)
+        let original = model.library.activeID!
+        model.importScript(text: "Hidden in Trash", title: "Trashed fixture")
+        model.trashScript(model.library.activeID!)
+        model.selectScript(original)
+        model.updateSettings { $0.countdownSeconds = 0 }
+        model.edit("Fixture pending edits are saved with the agent addition. " + String(repeating: "Keep reading this original take. ", count: 100))
+        model.seek(2)
+        model.togglePlayback()
+        let server = try ScriptAutomationSocketServer(url: folder.appendingPathComponent("scripts.sock")) { model.handleAutomation($0) }
+        defer { server.stop(); model.shutdown() }
+        let deadline = Date().addingTimeInterval(90)
+        while !FileManager.default.fileExists(atPath: folder.appendingPathComponent("stop").path), Date() < deadline {
+            try await Task.sleep(for: .milliseconds(50))
+        }
+    }
+
+    @MainActor static func checkAutomation(folder: URL) async throws {
+        let model = AppModel(storageFolder: folder)
+        defer { model.shutdown() }
+        let original = model.library.activeID!
+        model.updateSettings { $0.countdownSeconds = 0 }
+        model.edit("Unsaved original words stay in the editor while another script arrives")
+        model.seek(2)
+        model.togglePlayback()
+        let stops = SpeechService.stops
+        let added = model.handleAutomation(.init(operation: .add, title: "Agent episode", text: "A new script from an agent"))
+        check(added.success && model.running && model.library.activeID == original && model.playback.position == 2, "MCP add keeps the active take and position")
+        check(model.text.hasPrefix("Unsaved original") && SpeechService.stops == stops, "MCP add leaves editor and speech session alone")
+        let disk = try ScriptLibraryStore(folder: folder).loadOrCreate(defaultText: "unused")
+        check(disk.activeScript?.text == model.text && disk.scripts.count == 2, "MCP add flushes pending edits and persists the new script together")
+        model.scrollReadingPanel(by: 2)
+        _ = model.handleAutomation(.init(operation: .add, title: "During gesture", text: "Still reading"))
+        check(model.running, "MCP add preserves manual-scroll resume")
+        let opened = model.handleAutomation(.init(operation: .open, scriptID: added.scripts[0].id))
+        try await Task.sleep(for: .milliseconds(450))
+        check(opened.success && !model.running && model.text == "A new script from an agent", "MCP open selects explicitly and cancels gesture resume")
+        model.togglePlayback()
+        check(model.handleAutomation(.init(operation: .open, scriptID: added.scripts[0].id)).success && !model.running, "MCP open pauses even the current script")
+        model.updateSettings { $0.mode = .voice }
+        model.togglePlayback()
+        _ = model.handleAutomation(.init(operation: .add, title: "During voice startup", text: "Voice take stays armed"))
+        check(model.isPreparing, "MCP add preserves pending voice startup")
+        model.pause()
+        model.updateSettings { $0.mode = .automatic }
+        model.togglePlayback()
+        let before = model.library
+        check(!model.handleAutomation(.init(operation: .open, scriptID: UUID())).success && model.running, "Missing MCP script does not disturb playback")
+        let destination = folder.appendingPathComponent("library.json")
+        let bytes = try Data(contentsOf: destination)
+        try FileManager.default.removeItem(at: destination)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+        check(!model.handleAutomation(.init(operation: .add, title: "Cannot save", text: "Keep my take")).success && model.library == before && model.running, "Failed MCP add leaves library and playback unchanged")
+        try FileManager.default.removeItem(at: destination)
+        try bytes.write(to: destination)
+        model.pause()
+        for id in model.library.scripts.map(\.id) { model.trashScript(id) }
+        let emptyAdd = model.handleAutomation(.init(operation: .add, title: "First again", text: "New text in an empty library"))
+        check(emptyAdd.success && model.text == "New text in an empty library" && !model.running, "MCP add handles an empty library safely")
+        model.save()
+        let emptyDisk = try ScriptLibraryStore(folder: folder).loadOrCreate(defaultText: "unused")
+        check(emptyDisk.activeScript?.text == model.text, "Empty-library MCP text survives the next autosave")
+        let protectedFolder = folder.appendingPathComponent("unreadable")
+        try FileManager.default.createDirectory(at: protectedFolder, withIntermediateDirectories: true)
+        let protectedURL = protectedFolder.appendingPathComponent("library.json")
+        try Data("broken".utf8).write(to: protectedURL)
+        let protected = AppModel(storageFolder: protectedFolder)
+        defer { protected.shutdown() }
+        check(!protected.handleAutomation(.init(operation: .list)).success && !protected.handleAutomation(.init(operation: .add, title: "No", text: "No")).success, "MCP refuses an unreadable library")
+        let protectedBytes = try Data(contentsOf: protectedURL)
+        check(protectedBytes == Data("broken".utf8), "MCP keeps unreadable files untouched")
     }
 
     static func check(_ condition: @autoclosure () -> Bool, _ message: String) {

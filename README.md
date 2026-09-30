@@ -14,6 +14,9 @@ illustration of the reading experience.
 [Download the first public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1)
 · [Report a bug](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml)
 
+**Source on `main`: 1.2.0 (build 5).** This adds local MCP access for agents.
+Build from source to use it; the published 1.1.2 installer doesn't include MCP.
+
 ## What it does
 
 - **Keeps the words near the camera.** The floating panel sits directly below the
@@ -43,7 +46,7 @@ On first launch, auto-scroll is selected and playback is stopped. Optional speec
 models download separately; they aren't bundled into the installer.
 
 See [packaging notes](docs/PACKAGING.md) for signing, notarization, and rebuilding
-an installer. The current app is signed by Salty Panda LLC and notarized by Apple;
+an installer. The published 1.1.2 app is signed by Salty Panda LLC and notarized by Apple;
 see [the release's malware-check evidence](docs/DISTRIBUTION_SECURITY.md).
 
 ## Preview status and bug reports
@@ -152,6 +155,37 @@ Change these in **Keyboard shortcuts**. Conflicts are reported in the editor.
 | Restart | ⌥⌘R |
 | Show / hide panel | ⌥⌘H |
 
+## Add scripts from an agent with MCP
+
+An agent can save a named script directly into **My Scripts**. Adding one keeps
+your current script and take running. The editor shows which script the agent
+added. Opening a script is a separate action and pauses playback.
+
+Build version 1.2.0 or later, then point your MCP client at the app's executable
+with `--mcp`. For Codex, replace the example path with your checkout's full path:
+
+```sh
+codex mcp add teleprompter -- "/absolute/path/to/Teleprompter/build/Build/Products/Debug/Teleprompter.app/Contents/MacOS/Teleprompter" --mcp
+```
+
+Start a new agent session after adding the connection. Then ask it to save your
+script in Teleprompter. You can also ask it to list scripts or open one by ID.
+The app opens in the background on the first script request if it isn't running.
+Quit any older app copy before using the new build.
+
+| Tool | What it does |
+| --- | --- |
+| `add_script` | Saves a new script with `title` and `text`. Returns its saved name and ID. Duplicate names get a numbered suffix. |
+| `list_scripts` | Lists IDs, titles, word counts, and dates. Supports search and pagination; excludes Trash and full script text. |
+| `open_script` | Opens a saved `script_id`, saves your current edits, pauses playback, and restores the selected script's position. |
+
+The connection runs locally under your Mac user account. It has no network
+listener, delete tool, or microphone controls. Your agent client's own privacy
+and approval settings still apply to the script you give it.
+
+See [MCP setup and examples](docs/MCP.md) for other clients, limits, and
+troubleshooting.
+
 ## Recording with Cap or OBS
 
 Get Cap from [cap.so](https://cap.so), or see its source code and setup guide in
@@ -205,6 +239,7 @@ Run Locally**. Xcode resolves the pinned speech-engine packages.
 ./script/build_and_run.sh --verify
 swift test
 ./script/check_library_integration.sh
+python3 script/check_mcp.py
 ```
 
 - [Development guide](docs/DEVELOPMENT.md): source layout, build commands, speech fixtures, and diagnostics.
