@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a problem with Teleprompter's public preview.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying the first public preview. Check existing issues before posting.
+        Reports are public. Remove private script text from screenshots and clips.
+        Bug reports do not require the contributor agreement.
+  - type: input
+    id: app_version
+    attributes:
+      label: App version and build
+      description: Find this under Teleprompter → About Teleprompter.
+      placeholder: "1.1.2 (build 4)"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Mac and macOS
+      description: Include the Mac model, memory, macOS version, and display setup if relevant.
+      placeholder: "MacBook Air M4, 16 GB RAM, macOS 26, built-in display plus external monitor"
+    validations:
+      required: true
+  - type: dropdown
+    id: playback
+    attributes:
+      label: Playback mode or speech engine
+      options:
+        - Auto-scroll
+        - Voice-follow — Apple Speech
+        - Voice-follow — Moonshine Small
+        - Voice-follow — Parakeet Realtime
+        - Voice-follow — Whisper Turbo
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the settings and actions that lead to the problem.
+      placeholder: |
+        1. Open a script…
+        2. Choose…
+        3. Start reading…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead? Include an error message if one appeared.
+    validations:
+      required: true
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Screenshots or extra context
+      description: Optional. Attach a screenshot or short clip after removing private script text.

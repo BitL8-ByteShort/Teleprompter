@@ -6,8 +6,13 @@ Read your script close to the camera while you record. Teleprompter is a native
 Mac app built for YouTube videos, with steady auto-scroll and voice-follow that
 runs on your Mac. Use Cap, OBS, or your usual recorder for the video.
 
-**This repository is private.** The app is being tested locally and isn't on the
-Mac App Store. The banner above is an illustration of the reading experience.
+**First public preview: version 1.1.2 (build 4).** This is the first release for
+public testing, following private development builds. Expect updates as people
+try it on more Macs. It isn't on the Mac App Store. The banner above is an
+illustration of the reading experience.
+
+[Download the first public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1)
+· [Report a bug](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml)
 
 ## What it does
 
@@ -29,7 +34,7 @@ Mac App Store. The banner above is an illustration of the reading experience.
 Requires **macOS 26 or later**, **Apple Silicon**, and an open built-in MacBook
 screen for the reading panel. Xcode is only needed if you're building from source.
 
-1. Download the `.dmg` from the [private releases](https://github.com/BitL8-ByteShort/Teleprompter/releases).
+1. Download [Teleprompter 1.1.2 for Apple Silicon](https://github.com/BitL8-ByteShort/Teleprompter/releases/download/v1.1.2-public-preview.1/Teleprompter-1.1.2-arm64.dmg) from the [first public preview release](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1).
 2. Open it and drag **Teleprompter.app** into **Applications**.
 3. Eject the disk image, then open Teleprompter from Applications.
 4. Paste your script and choose **Start reading**.
@@ -40,6 +45,27 @@ models download separately; they aren't bundled into the installer.
 See [packaging notes](docs/PACKAGING.md) for signing, notarization, and rebuilding
 an installer. The current app is signed by Salty Panda LLC and notarized by Apple;
 see [the release's malware-check evidence](docs/DISTRIBUTION_SECURITY.md).
+
+## Preview status and bug reports
+
+This first public preview includes auto-scroll, voice-follow, local model
+downloads, and saved scripts. It has been tested on the development Mac;
+performance while recording on 8 GB and 16 GB Macs still needs testing. Whisper
+can take time to prepare on first use. Check a short saved recording to confirm
+your recorder excludes the panel before recording a full take.
+
+If something goes wrong, [check existing issues](https://github.com/BitL8-ByteShort/Teleprompter/issues)
+and [report a bug](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml).
+A GitHub account is needed to submit a report. Include:
+
+- App version and build, available under **Teleprompter → About Teleprompter**.
+- Mac model, memory, and macOS version.
+- Auto-scroll or voice-follow, and the selected speech engine if relevant.
+- Steps to reproduce, what you expected, and what happened.
+- A screenshot or short clip if it helps; remove private script text first.
+
+Bug reports don't require the contributor agreement. For questions or feature
+ideas, [open an issue](https://github.com/BitL8-ByteShort/Teleprompter/issues/new).
 
 ## Set up your first take
 
@@ -205,11 +231,13 @@ license future releases differently.
 Contributions are welcome through the [contribution guide](CONTRIBUTING.md).
 Contributors keep ownership of their work and explicitly accept the
 [contributor agreement](CLA.md), which permits Salty Panda LLC to use and license
-those contributions in future releases, including commercial releases. The
-repository remains private, so contributors need authorized access.
+those contributions in future releases, including commercial releases. To
+propose a change, fork the public repository and open a pull request.
 
-Only the owner currently has repository access. See [repository access and main
-branch rules](docs/REPOSITORY_ACCESS.md) before inviting contributors.
+Public access lets people read and fork the code. Changes to this repository
+stay under the owner's control; see [repository access and main branch
+rules](docs/REPOSITORY_ACCESS.md). Publishing the repository does not change its
+proprietary license.
 
 Third-party code and models retain their own terms. See the
 [third-party notices](THIRD_PARTY_NOTICES.md) for the inventory and full license

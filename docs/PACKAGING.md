@@ -3,7 +3,9 @@
 The installer is a compressed `.dmg` containing `Teleprompter.app`, an
 Applications shortcut, short install instructions, and full license documents. The app inside is signed
 with **Developer ID Application: Salty Panda LLC** and notarized by Apple.
-The repository and its releases remain private.
+The first public preview is version 1.1.2 (build 4), available from
+[GitHub Releases](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1).
+The Mac App Store is not a distribution channel for this release.
 
 ## Install the app
 
@@ -41,7 +43,8 @@ Outputs:
 
 The filename follows the version in `App/Info.plist`. Generated installers,
 archives, models, and build logs are ignored by Git. Installers can be attached
-to releases in this private repository.
+to this repository's GitHub releases. Keep preview releases marked as prereleases
+and include a link to the [bug-report form](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml).
 
 To package an app that is already signed, notarized, and stapled:
 

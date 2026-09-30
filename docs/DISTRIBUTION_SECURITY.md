@@ -16,7 +16,7 @@ Suggested wording for this release:
 > automated checks found no known malware in this build.
 
 We have not submitted the app to the Mac App Store or completed an independent
-security audit. Distribution currently uses the private GitHub release's DMG.
+security audit. Distribution uses the first public preview's GitHub release DMG.
 The **app inside the DMG** is signed and notarized; the disk-image container does
 not have a separate signature or notarization ticket.
 
@@ -25,8 +25,8 @@ not have a separate signature or notarization ticket.
 - Bundle identifier: `com.bitl8byteshort.Teleprompter`
 - Signing team: `4WWK6TTABC` (Salty Panda LLC)
 - Installer: `Teleprompter-1.1.2-arm64.dmg`
-- SHA-256: `04d11191fbc5f10ad6b9a3271804d8223c0ba390750f8bb2386a6adeffed8053`
-- [Private release](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-preview.1)
+- SHA-256: `dc4414e9fdde5befd8ecf65f97d6729c4953d4c34b6d693866097b1909167f1b`
+- [First public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1)
 
 To verify an installed copy:
 

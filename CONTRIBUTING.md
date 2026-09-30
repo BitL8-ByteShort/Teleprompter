@@ -1,13 +1,22 @@
 # Contributing to Teleprompter
 
 Bug reports, fixes, documentation improvements, and focused feature contributions
-are welcome. Teleprompter is currently a private project, so source contributions
-require repository access. Access is managed by the maintainers.
+are welcome. Teleprompter's first public preview is version 1.1.2 (build 4).
+You can fork this repository and submit a pull request without write access to
+the main repository.
 
-The owner is currently the only collaborator. Outside write access should wait
-until the prepared main branch rules are enforced; see
-[repository access](docs/REPOSITORY_ACCESS.md). Every contribution needs the
-owner's review and approval.
+The owner is the only person with write access. Every contribution needs the
+owner's review and approval; see [repository access](docs/REPOSITORY_ACCESS.md).
+
+## Report a bug
+
+[Check existing issues](https://github.com/BitL8-ByteShort/Teleprompter/issues),
+then use the [bug-report form](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml).
+Include your app version/build, Mac model and memory, macOS version, playback
+mode or speech engine, reproduction steps, expected behavior, and actual result.
+Screenshots or short clips help when they don't reveal private script text.
+Bug reports do not require a contributor agreement. Questions and feature ideas
+can use a [general issue](https://github.com/BitL8-ByteShort/Teleprompter/issues/new).
 
 The app uses a [proprietary license](LICENSE). Accepting contributions doesn't
 make the whole project open source. The [contributor agreement](CLA.md) lets
@@ -26,12 +35,13 @@ playback controls unless the issue specifically calls for a change.
 
 ## Submit a change
 
-1. Create a branch from `main` in your authorized checkout.
+1. Fork the repository, then create a branch from `main` in your fork.
 2. Make one focused change. Include a regression test when it proves a meaningful
    behavior, especially for playback, speech alignment, or saved scripts.
 3. Run the checks relevant to your change. Describe what you actually tested
    and anything you couldn't verify on your Mac.
-4. Open a pull request using the template. Explain the problem, the resulting
+4. Open a pull request from your fork into this repository's `main`, using the
+   template. Explain the problem, the resulting
    behavior, and any new dependencies or third-party material.
 5. Read [CLA.md](CLA.md) on the target branch and post its completed acceptance
    statement from your own GitHub account. Every rights holder must be covered
@@ -73,5 +83,6 @@ project with `python3 script/generate_project.py`.
   contribution commits in the PR before merging. Keep that record with the
   project history, including when squashing a PR.
 
-This is a manual acceptance process. No CLA bot or automated merge restriction
-is configured. Do not merge a contribution with missing or unclear authorization.
+CLA acceptance is manual; no CLA bot checks it. Main branch rules require owner
+review, but that review gate does not verify the agreement. Do not merge a
+contribution with missing or unclear authorization.

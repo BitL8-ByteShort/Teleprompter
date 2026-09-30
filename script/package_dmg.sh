@@ -107,7 +107,19 @@ License terms and complete third-party notices are included on this disk image
 and inside the app. Open Help > Licenses & Credits to read them. Optional model
 downloads also receive their own license documents beside the model files.
 
-The repository and releases are private:
+First public preview: Teleprompter 1.1.2 (build 4).
+This is the first release for public testing; updates will follow.
+
+Downloads and release notes:
+https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.1.2-public-preview.1
+
+Report bugs:
+https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml
+Include the app version/build, Mac model and memory, macOS version, playback
+mode or speech engine, steps to reproduce, expected behavior, and actual result.
+Remove private script text from screenshots or recordings before posting.
+
+Repository:
 https://github.com/BitL8-ByteShort/Teleprompter
 TXT
 hdiutil create -volname Teleprompter -srcfolder "$STAGING_ROOT" \
