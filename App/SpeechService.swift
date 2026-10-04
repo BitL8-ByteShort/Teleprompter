@@ -20,17 +20,19 @@ final class SpeechService {
     var onLevel: ((Float) -> Void)?
     var onStatus: ((String) -> Void)?
     var onError: ((String) -> Void)?
+    var onRecognitionReset: (() -> Void)?
     private var backend: (any VoiceBackend)?
     private var backendChoice: VoiceEngine?
     private var preparationTask: Task<Void, Error>?
     private var cleanupTask: Task<Void, Never>?
-    private var pcmContinuation: AsyncStream<[Float]>.Continuation?
+    private var pcmInput: AudioInputChannel<[Float]>?
     private var engine: AVAudioEngine?
     private var tapInstalled = false
     private var analyzer: SpeechAnalyzer?
     private var resultTask: Task<Void, Never>?
     private var inputTask: Task<Void, Never>?
-    private var continuation: AsyncStream<AnalyzerInput>.Continuation?
+    private var analyzerInput: AudioInputChannel<AnalyzerInput>?
+    private var recognitionRecoveryTask: Task<Void, Never>?
     private var configurationObserver: NSObjectProtocol?
     private var recoveryTask: Task<Void, Never>?
     private var recovery = InputRecovery()
@@ -42,6 +44,10 @@ final class SpeechService {
 
     func start(microphoneID: String, voiceEngine: VoiceEngine) async throws {
         stop()
+        try await begin(microphoneID: microphoneID, voiceEngine: voiceEngine)
+    }
+
+    private func begin(microphoneID: String, voiceEngine: VoiceEngine) async throws {
         let sessionToken = token
         func check() throws {
             try Task.checkCancellation()
@@ -77,7 +83,7 @@ final class SpeechService {
         }
         engine.prepare()
         try engine.start()
-        onStatus?("Listening on this Mac")
+        onStatus?("Listening · \(voiceEngine.title)")
     }
 
     private func prepareRecognition(_ choice: VoiceEngine, sessionToken: UUID) async throws -> AVAudioFormat {
@@ -106,17 +112,17 @@ final class SpeechService {
             try await task.value
             try Task.checkCancellation()
             guard token == sessionToken else { throw CancellationError() }
-            let (stream, continuation) = AsyncStream<[Float]>.makeStream(bufferingPolicy: .bufferingOldest(48))
-            pcmContinuation = continuation
-            inputTask = Task { [weak self] in
+            let input = AudioInputChannel<[Float]>(sampleRate: 16_000)
+            pcmInput = input
+            inputTask = Task.detached(priority: .userInitiated) { [weak self] in
                 do {
-                    for await samples in stream {
+                    for await samples in input.stream {
                         try Task.checkCancellation()
                         try await backend.accept(samples)
                     }
                 } catch {
-                    guard !Task.isCancelled, self?.token == sessionToken else { return }
-                    self?.onError?("Voice-follow stopped: \(error.localizedDescription)")
+                    guard !Task.isCancelled else { return }
+                    await self?.inputFailed("Voice-follow stopped: \(error.localizedDescription)", sessionToken: sessionToken)
                 }
             }
             return AVAudioFormat(standardFormatWithSampleRate: 16_000, channels: 1)!
@@ -150,8 +156,8 @@ final class SpeechService {
         onStatus?("Preparing on-device recognition…")
         try await analyzer.prepareToAnalyze(in: format)
         try check()
-        let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream(bufferingPolicy: .bufferingNewest(64))
-        self.continuation = continuation
+        let input = AudioInputChannel<AnalyzerInput>(sampleRate: format.sampleRate)
+        analyzerInput = input
         resultTask = Task { [weak self] in
             do {
                 for try await result in transcriber.results {
@@ -164,11 +170,11 @@ final class SpeechService {
                 self?.onError?("Speech recognition stopped: \(error.localizedDescription)")
             }
         }
-        inputTask = Task { [weak self] in
-            do { try await analyzer.start(inputSequence: stream) }
+        inputTask = Task.detached(priority: .userInitiated) { [weak self] in
+            do { try await analyzer.start(inputSequence: input.stream) }
             catch {
-                guard !Task.isCancelled, self?.token == sessionToken else { return }
-                self?.onError?("Audio analysis stopped: \(error.localizedDescription)")
+                guard !Task.isCancelled else { return }
+                await self?.inputFailed("Audio analysis stopped: \(error.localizedDescription)", sessionToken: sessionToken)
             }
         }
         return format
@@ -177,6 +183,7 @@ final class SpeechService {
     func stop() {
         token = UUID()
         recoveryTask?.cancel(); recoveryTask = nil
+        recognitionRecoveryTask?.cancel(); recognitionRecoveryTask = nil
         recovery = InputRecovery()
         if let configurationObserver { NotificationCenter.default.removeObserver(configurationObserver) }
         configurationObserver = nil
@@ -186,9 +193,9 @@ final class SpeechService {
         }
         tapInstalled = false
         engine = nil
-        continuation?.finish(); continuation = nil
+        analyzerInput?.finish(); analyzerInput = nil
         resultTask?.cancel(); resultTask = nil
-        pcmContinuation?.finish(); pcmContinuation = nil
+        pcmInput?.finish(); pcmInput = nil
         let oldInput = inputTask
         let oldPreparation = preparationTask
         let oldBackend = backend
@@ -228,16 +235,24 @@ final class SpeechService {
         guard natural.sampleRate > 0, natural.channelCount > 0 else {
             throw VoiceError.unavailable("The microphone has no audio input. Select another microphone.")
         }
-        let continuation = continuation
-        let pcmContinuation = pcmContinuation
-        let bridge = try AudioBridge(from: natural, to: format, deliver: { buffer in
-            if let pcmContinuation, let data = buffer.floatChannelData?[0] {
+        let analyzerInput = analyzerInput
+        let pcmInput = pcmInput
+        let bridge = try AudioBridge(from: natural, to: format, deliver: { [weak self] buffer in
+            let delivery: AudioInputChannel<[Float]>.Delivery
+            if let pcmInput, let data = buffer.floatChannelData?[0] {
                 let samples = Array(UnsafeBufferPointer(start: data, count: Int(buffer.frameLength)))
-                if case .dropped = pcmContinuation.yield(samples) { return false }
-            } else if let continuation {
-                if case .dropped = continuation.yield(AnalyzerInput(buffer: buffer)) { return false }
+                delivery = pcmInput.offer(samples, frames: samples.count)
+            } else if let analyzerInput {
+                switch analyzerInput.offer(AnalyzerInput(buffer: buffer), frames: Int(buffer.frameLength)) {
+                case .accepted: delivery = .accepted
+                case .overflow: delivery = .overflow
+                case .closed: delivery = .closed
+                }
+            } else { return false }
+            if delivery == .overflow {
+                Task { @MainActor in self?.recoverRecognition(sessionToken: sessionToken) }
             }
-            return true
+            return delivery == .accepted
         },
             level: { [weak self] level in
                 Task { @MainActor in guard self?.token == sessionToken else { return }; self?.onLevel?(level) }
@@ -249,6 +264,33 @@ final class SpeechService {
         input.installTap(onBus: 0, bufferSize: 2048, format: natural) { @Sendable buffer, _ in bridge.consume(buffer) }
         tapInstalled = true
         inputFormat = natural
+    }
+
+    private func inputFailed(_ message: String, sessionToken: UUID) {
+        guard token == sessionToken else { return }
+        onError?(message)
+    }
+
+    private func recoverRecognition(sessionToken: UUID) {
+        guard token == sessionToken, let choice = backendChoice else { return }
+        let microphoneID = selectedMicrophoneID
+        log.notice("Audio backlog exceeded its bounded budget; restarting \(choice.title, privacy: .public) with reading position held")
+        // Invalidate callbacks immediately, before awaiting the old inference.
+        // stop() retains the selected model; begin() creates fresh stream state.
+        stop()
+        onRecognitionReset?()
+        onStatus?("Reconnecting \(choice.title) · holding your place…")
+        let recoveryToken = token
+        recognitionRecoveryTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await begin(microphoneID: microphoneID, voiceEngine: choice)
+            } catch {
+                guard !Task.isCancelled, token == recoveryToken else { return }
+                onError?("Could not resume \(choice.title): \(error.localizedDescription)")
+            }
+            if token == recoveryToken { recognitionRecoveryTask = nil }
+        }
     }
 
     private func scheduleInputRecovery(sessionToken: UUID) {
@@ -305,52 +347,6 @@ final class SpeechService {
             }
             guard let uid = string(kAudioDevicePropertyDeviceUID), let name = string(kAudioObjectPropertyName) else { return nil }
             return Microphone(id: uid, name: name, deviceID: device)
-        }
-    }
-}
-
-// The audio tap invokes this bridge serially. Its converter and meter state never
-// cross onto the UI actor; only immutable levels and AnalyzerInput values do.
-private final class AudioBridge: @unchecked Sendable {
-    let converter: AVAudioConverter
-    let format: AVAudioFormat
-    let deliver: @Sendable (AVAudioPCMBuffer) -> Bool
-    let level: @Sendable (Float) -> Void
-    let failure: @Sendable (String) -> Void
-    private var meterFrames: UInt32 = 0
-    private var failed = false
-
-    init(from: AVAudioFormat, to: AVAudioFormat, deliver: @escaping @Sendable (AVAudioPCMBuffer) -> Bool,
-         level: @escaping @Sendable (Float) -> Void, failure: @escaping @Sendable (String) -> Void) throws {
-        guard let converter = AVAudioConverter(from: from, to: to) else { throw VoiceError.unavailable("Could not prepare microphone audio for recognition.") }
-        self.converter = converter; self.format = to; self.deliver = deliver; self.level = level; self.failure = failure
-    }
-
-    func consume(_ buffer: AVAudioPCMBuffer) {
-        guard !failed else { return }
-        meterFrames += buffer.frameLength
-        if meterFrames >= UInt32(buffer.format.sampleRate / 10), let samples = buffer.floatChannelData?[0] {
-            var sum: Float = 0
-            for index in 0..<Int(buffer.frameLength) { sum += samples[index] * samples[index] }
-            let rms = sqrt(sum / Float(max(1, buffer.frameLength)))
-            level(min(1, max(0, (20 * log10(max(rms, 0.00001)) + 60) / 60)))
-            meterFrames = 0
-        }
-        let capacity = AVAudioFrameCount(ceil(Double(buffer.frameLength) * format.sampleRate / buffer.format.sampleRate)) + 32
-        guard let converted = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: capacity) else { return }
-        var supplied = false
-        var error: NSError?
-        let status = converter.convert(to: converted, error: &error) { _, outputStatus in
-            if supplied { outputStatus.pointee = .noDataNow; return nil }
-            supplied = true; outputStatus.pointee = .haveData; return buffer
-        }
-        if status == .error {
-            failed = true; failure("Could not convert microphone audio: \(error?.localizedDescription ?? "unknown error")"); return
-        }
-        if converted.frameLength > 0 {
-            if !deliver(converted) {
-                failed = true; failure("Voice-follow could not keep up with audio. Pause other heavy tasks, then resume or use auto-scroll.")
-            }
         }
     }
 }

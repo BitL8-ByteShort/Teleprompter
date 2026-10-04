@@ -65,6 +65,7 @@ final class AppModel {
         speech.onResult = { [weak self] text, segment, final in self?.receive(text, segment: segment, final: final) }
         speech.onLevel = { [weak self] level in self?.microphoneLevel = level }
         speech.onStatus = { [weak self] status in self?.speechStatus = status }
+        speech.onRecognitionReset = { [weak self] in self?.alignment.reset() }
         speech.onError = { [weak self] message in self?.speechFailed(message) }
         refreshMicrophones()
         refreshModels()

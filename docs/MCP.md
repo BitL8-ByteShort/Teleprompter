@@ -1,7 +1,7 @@
 # Add scripts with MCP
 
 Requires Teleprompter **1.2.0 or later**. Install the
-[current public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.0-public-preview.1)
+[current public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.1-public-preview.1)
 or build the source with `./script/build_and_run.sh --verify`.
 
 ## Connect your agent
