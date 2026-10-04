@@ -1,8 +1,8 @@
 # Signing and Apple's malware check
 
-Teleprompter **1.2.0, build 6** is signed by **Salty Panda LLC** using Apple's
+Teleprompter **1.2.1, build 7** is signed by **Salty Panda LLC** using Apple's
 Developer ID program and is notarized by Apple. The notarization ticket is
-attached to the app. On September 29, 2026, its signature and attached ticket
+attached to the app. On October 4, 2026, its signature and attached ticket
 validated, and macOS Gatekeeper accepted it as `Notarized Developer ID`.
 
 Apple's automated notarization service checks submitted software for known
@@ -12,7 +12,7 @@ a guarantee against every threat or a full security audit. See
 
 Suggested wording for this release:
 
-> Teleprompter 1.2.0 is signed by Salty Panda LLC and notarized by Apple. Apple's
+> Teleprompter 1.2.1 is signed by Salty Panda LLC and notarized by Apple. Apple's
 > automated checks found no known malware in this build.
 
 We have not submitted the app to the Mac App Store or completed an independent
@@ -24,9 +24,9 @@ not have a separate signature or notarization ticket.
 
 - Bundle identifier: `com.bitl8byteshort.Teleprompter`
 - Signing team: `4WWK6TTABC` (Salty Panda LLC)
-- Installer: `Teleprompter-1.2.0-arm64.dmg`
-- SHA-256: `5606e0da321fef11b0142622a9a3741a1b5056349ca3902af3cbd484853bda38`
-- [Public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.0-public-preview.1)
+- Installer: `Teleprompter-1.2.1-arm64.dmg`
+- SHA-256: `431aa9accccfd3f2f43363e57986a7f97cd968989d46520aa709b5364997009c`
+- [Public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.1-public-preview.1)
 
 To verify an installed copy:
 
