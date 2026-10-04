@@ -135,6 +135,12 @@ Only the selected optional model loads. Pause stops microphone capture, while th
 model stays ready for another take. Switching engines or returning to auto-scroll
 releases it. First-time preparation can take longer, particularly with Whisper.
 
+The local 1.2.1 repair build buffers incoming audio by duration, so the budget
+doesn't shrink when a microphone sends small callbacks. Brief processing stalls
+retain their audio. If the backlog exceeds four seconds, recognition restarts
+with the selected model still loaded and the reading position held. Speech from
+either side of that audio gap is never joined into one transcript.
+
 Voice-follow matches nearby words in your script. It holds during silence,
 unrelated ad-libs, or uncertain recognition. For a bigger skip, scroll or select
 the intended passage. If recognition or microphone access fails, your position is

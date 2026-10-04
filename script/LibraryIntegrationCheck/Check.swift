@@ -3,6 +3,7 @@ import AppKit
 import SwiftUI
 
 @MainActor final class SpeechService {
+    var onRecognitionReset: (() -> Void)?
     var onResult: ((String, Int, Bool) -> Void)?
     var onLevel: ((Float) -> Void)?
     var onStatus: ((String) -> Void)?
@@ -10,6 +11,8 @@ import SwiftUI
     static var starts = 0
     static var stops = 0
     static var delay: Duration = .zero
+    static weak var current: SpeechService?
+    init() { Self.current = self }
     static func microphones() -> [Microphone] { [] }
     func start(microphoneID: String, voiceEngine: VoiceEngine) async throws {
         Self.starts += 1
@@ -67,6 +70,24 @@ enum VoiceModelStore {
         model.selectScript(first)
         await Task.yield()
         check(!model.isPreparing && !model.running, "Switch cancels pending voice startup")
+        // Recovery resets segment identities while preserving the active take.
+        SpeechService.delay = .zero
+        let recoveryModel = AppModel(storageFolder: folder.appendingPathComponent("voice-recovery"))
+        recoveryModel.edit("today we build a native application for recording videos with a clear reading panel")
+        recoveryModel.updateSettings { $0.mode = .voice; $0.countdownSeconds = 0 }
+        let recoveringSpeech = SpeechService.current!
+        recoveryModel.togglePlayback()
+        for _ in 0..<100 where recoveryModel.isPreparing { try await Task.sleep(for: .milliseconds(1)) }
+        recoveringSpeech.onResult?("today we build", 0, true)
+        check(recoveryModel.playback.position == 3, "Voice transcript advances the isolated take")
+        recoveringSpeech.onRecognitionReset?()
+        check(recoveryModel.running && recoveryModel.playback.position == 3, "Audio recovery holds position without pausing playback")
+        recoveringSpeech.onResult?("a native application", 0, true)
+        check(recoveryModel.playback.position == 6, "Recovered stream can reuse segment zero and follow again")
+        recoveryModel.pause()
+        recoveringSpeech.onRecognitionReset?()
+        recoveringSpeech.onResult?("for recording videos", 0, false)
+        check(!recoveryModel.running && recoveryModel.playback.position == 6, "Late recovery events cannot restart a paused take")
         model.importScript(text: "Imported third script", title: "Episode 3")
         let imported = model.library.activeID!
         check(model.library.scripts.count == 3, "Import creates a new script")
