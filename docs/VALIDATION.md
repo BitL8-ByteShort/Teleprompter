@@ -433,3 +433,28 @@ The 1.2.1 public preview uses `Teleprompter-1.2.1-arm64.dmg`. Its SHA-256 is
 The checksum and the app inside the read-only mounted DMG passed version/build,
 strict signature, notarization ticket, Gatekeeper, and bundled-license checks.
 Published preview: `v1.2.1-public-preview.1`.
+
+## 1.2.2 public preview: selected-input isolation
+
+- Voice-follow now uses input-only AUHAL capture: input is enabled and output
+  disabled before the selected device is bound. It never sets system input/output
+  defaults or hardware formats. Only selected-input faults enter the existing
+  bounded recovery path; recognition backlog recovery still holds reading position.
+- The two configuration-order/failure checks reproduce the old selection gap
+  before the fix and pass afterward. All 72 default Swift checks pass (the opt-in
+  Apple fixture remains skipped); the app/library integration checks pass.
+- Release 1.2.2 (8) archived and exported with Developer ID, received Apple's
+  notarization ticket, passed strict signature/Gatekeeper/license verification
+  and produced a verified DMG with a SHA-256 checksum.
+- Installed from the mounted DMG. Native Moonshine voice-follow using MacBook
+  Pro Microphone reaches Listening and receives nonzero levels. Pause returns
+  the meter to zero. The selected script and reading position are unchanged;
+  the prior unavailable input was replaced with MacBook Pro Microphone.
+  System defaults and observed device rates remain unchanged.
+- AirPods were disconnected during this final Teleprompter pass. Murmur's same
+  capture design was previously exercised with built-in and USB input while
+  AirPods remained connected. This is not a new Teleprompter AirPods playback
+  continuity test or a human recognition-quality result.
+- Reading-panel/Cap behavior and recognition adapters are unchanged; their
+  previously accepted evidence remains applicable. Start a new Cap take after
+  updating the app so its restarted reading panel is included in the exclusions.

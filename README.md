@@ -6,12 +6,12 @@ Read your script close to the camera while you record. Teleprompter is a native
 Mac app built for YouTube videos, with steady auto-scroll and voice-follow that
 runs on your Mac. Use Cap, OBS, or your usual recorder for the video.
 
-**Public preview: version 1.2.1 (build 7).** Our first public release was 1.1.2.
+**Public preview: version 1.2.2 (build 8).** Our first public release was 1.1.2.
 Expect updates as people
 try it on more Macs. It isn't on the Mac App Store. The banner above is an
 illustration of the reading experience.
 
-[Download the public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.1-public-preview.1)
+[Download the public preview](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.2-public-preview.1)
 · [Report a bug](https://github.com/BitL8-ByteShort/Teleprompter/issues/new?template=bug_report.yml)
 
 **What's new:** voice-follow handles brief audio backlogs and automatically
@@ -38,7 +38,7 @@ The Cap exclusion fix and local MCP access are also included.
 Requires **macOS 26 or later**, **Apple Silicon**, and an open built-in MacBook
 screen for the reading panel. Xcode is only needed if you're building from source.
 
-1. Download [Teleprompter 1.2.1 for Apple Silicon](https://github.com/BitL8-ByteShort/Teleprompter/releases/download/v1.2.1-public-preview.1/Teleprompter-1.2.1-arm64.dmg) from the [public preview release](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.1-public-preview.1).
+1. Download [Teleprompter 1.2.2 for Apple Silicon](https://github.com/BitL8-ByteShort/Teleprompter/releases/download/v1.2.2-public-preview.1/Teleprompter-1.2.2-arm64.dmg) from the [public preview release](https://github.com/BitL8-ByteShort/Teleprompter/releases/tag/v1.2.2-public-preview.1).
 2. Open it and drag **Teleprompter.app** into **Applications**.
 3. Eject the disk image, then open Teleprompter from Applications.
 4. Paste your script and choose **Start reading**.
@@ -47,7 +47,7 @@ On first launch, auto-scroll is selected and playback is stopped. Optional speec
 models download separately; they aren't bundled into the installer.
 
 See [packaging notes](docs/PACKAGING.md) for signing, notarization, and rebuilding
-an installer. The published 1.2.1 app is signed by Salty Panda LLC and notarized by Apple;
+an installer. The published 1.2.2 app is signed by Salty Panda LLC and notarized by Apple;
 see [the release's malware-check evidence](docs/DISTRIBUTION_SECURITY.md).
 
 ## Preview status and bug reports
@@ -111,7 +111,10 @@ panel width preserves the current word.
 
 ## Voice-follow and local models
 
-Choose your microphone, then start reading. macOS requests microphone access on
+Choose your microphone, then start reading. Voice-follow opens the selected input
+without changing your system input or output device. You can use the MacBook or
+a USB mic while listening through AirPods. Only changes to the selected input can
+trigger microphone recovery; playback changes leave a healthy input running. macOS requests microphone access on
 first use. If needed, enable it under **System Settings → Privacy & Security →
 Microphone**.
 
@@ -136,7 +139,7 @@ Only the selected optional model loads. Pause stops microphone capture, while th
 model stays ready for another take. Switching engines or returning to auto-scroll
 releases it. First-time preparation can take longer, particularly with Whisper.
 
-Version 1.2.1 buffers incoming audio by duration, so the budget
+Version 1.2.2 buffers incoming audio by duration, so the budget
 doesn't shrink when a microphone sends small callbacks. Brief processing stalls
 retain their audio. If the backlog exceeds four seconds, recognition restarts
 with the selected model still loaded and the reading position held. Speech from
