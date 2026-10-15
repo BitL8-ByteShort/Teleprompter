@@ -3,7 +3,7 @@ import Foundation
 struct SpeechAlignment: Sendable {
     private var anchors: [Int: Int] = [:]
     private var finalized = Set<Int>()
-    private var accepted: [Int: (text: String, end: Int)] = [:]
+    private var accepted: [Int: (words: [String], end: Int)] = [:]
     mutating func reset() { anchors.removeAll(); finalized.removeAll(); accepted.removeAll() }
 
     mutating func consume(_ text: String, segment: Int, isFinal: Bool, script: Script, position: Int) -> Int? {
@@ -19,21 +19,41 @@ struct SpeechAlignment: Sendable {
                 finalized = finalized.intersection(keep)
             }
         }
-        if let prior = accepted[segment], prior.text == text {
+        let transcript = Script(text).tokens.map(\.normalized)
+        if let prior = accepted[segment], prior.words == transcript {
             return prior.end >= position ? prior.end : nil
         }
         // SpeechAnalyzer revises a segment in place. Anchor it once so an identical
         // partial cannot consume a second copy of a repeated phrase.
-        let spoken = Array(Script(text).tokens.map(\.normalized).suffix(16))
+        let spoken = Array(transcript.suffix(16))
         let words = script.tokens.map(\.normalized)
-        // Two exact words at the current passage are enough to start moving.
-        // This narrow path does not permit fuzzy or distant two-word matches.
-        if spoken.count == 2, words.count >= 2, anchor <= words.count - 2 {
-            for start in max(0, anchor)...min(words.count - 2, anchor + 2) {
-                let end = start + 2
-                if end >= position, Array(words[start..<end]) == spoken {
-                    accepted[segment] = (text, end)
-                    return end
+        // Start on the first exact word at the selected position. This path
+        // cannot skip words or search ahead, and duplicate partials were handled
+        // above, so a repeated word cannot move the script again.
+        if spoken.count == 1, position == anchor, words.indices.contains(position), words[position] == spoken[0] {
+            accepted[segment] = (transcript, position + 1)
+            return position + 1
+        }
+        // Use the newest exact words before comparing the whole volatile
+        // transcript. Earlier errors or an ad-lib must not add several lines
+        // of delay. Two words can move only at the current passage; recovery
+        // farther ahead still needs at least three and stays inside 48 words.
+        if spoken.count >= 2 {
+            for count in stride(from: spoken.count, through: 2, by: -1) {
+                let tail = Array(spoken.suffix(count))
+                let first = max(0, position - (count == 2 ? 0 : 24))
+                let last = min(words.count - count, position + (count == 2 ? 2 : 48 - count))
+                guard first <= last else { continue }
+                var nearest: (end: Int, distance: Int)?
+                for start in first...last {
+                    let end = start + count
+                    guard end >= position, end > anchor, Array(words[start..<end]) == tail else { continue }
+                    let distance = abs(start - max(anchor, position - count))
+                    if nearest == nil || distance < nearest!.distance { nearest = (end, distance) }
+                }
+                if let nearest {
+                    accepted[segment] = (transcript, nearest.end)
+                    return nearest.end
                 }
             }
         }
@@ -61,25 +81,23 @@ struct SpeechAlignment: Sendable {
                 if best == nil || score < best!.score { best = (end, score) }
             }
         }
-        // An ad-lib can remain in a volatile transcript after the reader resumes.
-        // Recover from an exact recent suffix close to the current word, instead
-        // of waiting for the whole transcript to become mostly script again.
-        if best == nil, spoken.count > 3 {
-            for count in stride(from: min(8, spoken.count - 1), through: 3, by: -1) {
-                let tail = Array(spoken.suffix(count))
-                let first = max(0, position - 8)
-                let last = min(words.count - count, position + 3)
-                guard first <= last else { continue }
-                for start in first...last {
-                    let end = start + count
-                    guard end >= position, end > anchor, Array(words[start..<end]) == tail else { continue }
-                    let score = Double(abs(start - anchor))
-                    if best == nil || score < best!.score { best = (end, score) }
+        // Streaming recognition often guesses the last word or two before
+        // revising them. If no whole-phrase match is credible, advance through
+        // its exact stable prefix without consuming those guessed words.
+        if best == nil, !isFinal, spoken.count > 3 {
+            for dropped in 1...min(2, spoken.count - 3) {
+                let prefix = Array(spoken.dropLast(dropped))
+                let last = min(words.count - prefix.count, position + 2)
+                guard lower <= last else { continue }
+                for start in lower...last {
+                    let end = start + prefix.count
+                    guard end >= position, end > anchor, Array(words[start..<end]) == prefix else { continue }
+                    accepted[segment] = (transcript, end)
+                    return end
                 }
-                if best != nil { break }
             }
         }
-        if let best { accepted[segment] = (text, best.end) }
+        if let best { accepted[segment] = (transcript, best.end) }
         return best?.end
     }
 

@@ -22,7 +22,8 @@ The Codex **Run** action and this command build and launch the same app:
 ```
 
 Optional script modes: `--debug`, `--logs`, and `--telemetry`.
-The local app bundle is `build/Build/Products/Debug/Teleprompter.app`.
+Normal runs use the optimized Release app at
+`build/Build/Products/Release/Teleprompter.app`; `--debug` builds Debug for LLDB.
 
 ## Tests and diagnostics
 
@@ -69,6 +70,17 @@ silence. Add `--retake` to verify a second take after suspending and resetting
 recognition with the same loaded model. It uses the same backends as the app. Fixture accuracy
 and this Mac's timings are not measurements on an 8 GB Mac or proof of Cap
 recording performance.
+
+To check recognition and matching latency together with installed models:
+
+```sh
+TELEPROMPTER_LATENCY_FIXTURE="$PWD/artifacts/voice-fixture-16k.wav" swift test
+TELEPROMPTER_LATENCY_FIXTURE="$PWD/artifacts/voice-fixture-16k.wav" TELEPROMPTER_LATENCY_ENGINE=moonshine swift test --filter preparedVoiceBackend
+```
+
+This opt-in test streams generated speech independently of inference. It checks
+first transcript, first script match, audio backlog, and reaching the final word.
+It never starts a microphone or downloads a model. Use the fixture generated above.
 
 `Core/` contains the shared timing, matching, placement, and persistence logic.
 `App/` owns the SwiftUI editor, nonactivating AppKit panel, global shortcuts,

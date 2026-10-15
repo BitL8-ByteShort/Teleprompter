@@ -9,9 +9,22 @@ actor ParakeetBackend: VoiceBackend {
         self.report = report
         try VoiceModelStore.requireDownloaded(.parakeet)
         if manager == nil {
-            let loaded = StreamingEouAsrManager(chunkSize: .ms320)
+            let chunkSize = StreamingChunkSize.ms320
+            let loaded = StreamingEouAsrManager(chunkSize: chunkSize)
             report(.status("Loading Parakeet Realtime…"))
             try await loaded.loadModels(from: VoiceModelStore.folder(.parakeet).appendingPathComponent(Repo.parakeetEou320.folderName))
+            // Core ML loads lazily: the first encoder/decoder predictions can
+            // take seconds even after loadModels returns. Pay that cost before
+            // microphone capture starts, then discard all warm-up stream state.
+            report(.status("Preparing Parakeet Realtime…"))
+            let format = AVAudioFormat(standardFormatWithSampleRate: 16_000, channels: 1)!
+            let silence = AVAudioPCMBuffer(pcmFormat: format,
+                                          frameCapacity: AVAudioFrameCount(chunkSize.chunkSamples))!
+            silence.frameLength = silence.frameCapacity
+            silence.floatChannelData![0].initialize(repeating: 0, count: Int(silence.frameLength))
+            _ = try await loaded.process(audioBuffer: silence)
+            await loaded.reset()
+            try Task.checkCancellation()
             manager = loaded
         }
         guard let manager else { return }

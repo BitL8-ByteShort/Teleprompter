@@ -19,6 +19,6 @@ let package = Package(
             .product(name: "WhisperKit", package: "argmax-oss-swift")
         ], path: "Speech"),
         .executableTarget(name: "VoiceEngineCheck", dependencies: ["TeleprompterSpeech", "TeleprompterCore"], path: "script/VoiceEngineCheck"),
-        .testTarget(name: "TeleprompterCoreTests", dependencies: ["TeleprompterCore"], path: "Tests")
+        .testTarget(name: "TeleprompterCoreTests", dependencies: ["TeleprompterCore", "TeleprompterSpeech"], path: "Tests")
     ]
 )

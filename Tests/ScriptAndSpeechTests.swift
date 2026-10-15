@@ -30,7 +30,7 @@ import Testing
 @Test func smallOmissionAndRevisedRecognitionRecover() {
     let script = Script("today we build a wonderful native application for recording videos")
     var alignment = SpeechAlignment()
-    #expect(alignment.consume("today", segment: 0, isFinal: false, script: script, position: 0) == nil)
+    #expect(alignment.consume("today", segment: 0, isFinal: false, script: script, position: 0) == 1)
     #expect(alignment.consume("today we build a native application", segment: 0, isFinal: true, script: script, position: 0) == 7)
 }
 
@@ -46,7 +46,7 @@ import Testing
 @Test func exactOpeningWordsRespondBeforeAWholePhraseIsFinished() {
     let script = Script("welcome to teleprompter welcome to another episode")
     var alignment = SpeechAlignment()
-    #expect(alignment.consume("welcome", segment: 0, isFinal: false, script: script, position: 0) == nil)
+    #expect(alignment.consume("welcome", segment: 0, isFinal: false, script: script, position: 0) == 1)
     #expect(alignment.consume("welcome to", segment: 0, isFinal: false, script: script, position: 0) == 2)
     #expect(alignment.consume("welcome to", segment: 0, isFinal: false, script: script, position: 2) == 2)
 }
@@ -77,4 +77,57 @@ import Testing
     alignment.reset()
     #expect(alignment.consume(words[200..<205].joined(separator: " "), segment: 0,
                               isFinal: false, script: script, position: 200) == 205)
+}
+
+@Test func twoResumedWordsMoveWithoutWaitingForOldRecognitionErrorsToClear() {
+    let script = Script("today we build a native application for recording videos")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("today we build", segment: 0, isFinal: false, script: script, position: 0) == 3)
+    #expect(alignment.consume("today we build let me check the microphone a native", segment: 0,
+                              isFinal: false, script: script, position: 3) == 5)
+}
+
+@Test func recentScriptWordsRecoverWhenReaderIsSeveralShortLinesAhead() {
+    let script = Script("start with a plain paper sheet then fold both corners the edges meet neatly along the middle crease")
+    var alignment = SpeechAlignment()
+    // A recognizer retains unrelated words while the reader continues. The
+    // exact recent phrase should catch up on this update, even ten words ahead.
+    #expect(alignment.consume("sorry hang on let me just check this thing before continuing the edges meet", segment: 0,
+                              isFinal: false, script: script, position: 0) == 13)
+}
+
+@Test func normalizedDuplicateAndAdlibCannotConsumeAnotherRepeatedPhrase() {
+    let script = Script("today we build today we build a native application")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("today we build", segment: 0, isFinal: false, script: script, position: 0) == 3)
+    #expect(alignment.consume("Today, we build!", segment: 0, isFinal: false, script: script, position: 3) == 3)
+    let adlib = alignment.consume("Today, we build! let me check", segment: 0, isFinal: false, script: script, position: 3)
+    #expect(adlib == nil || adlib == 3)
+}
+
+@Test func twoWordSuffixCannotSkipAheadToADifferentPassage() {
+    let script = Script("today we build a native application for recording videos")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("unrelated commentary recording videos", segment: 0,
+                              isFinal: false, script: script, position: 0) == nil)
+}
+
+@Test func volatileWrongEndingDoesNotBlockCorrectOpeningWords() {
+    let script = Script("today we are building a native teleprompter application for recording videos")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("today we are going to", segment: 0, isFinal: false,
+                              script: script, position: 0) == 3)
+    #expect(alignment.consume("today we are building a new house", segment: 0, isFinal: false,
+                              script: script, position: 3) == 5)
+    #expect(alignment.consume("Today we are building a new house.", segment: 0, isFinal: false,
+                              script: script, position: 5) == 5)
+}
+
+@Test func firstExactWordStartsFollowingAndCannotConsumeARepeatedPartial() {
+    let script = Script("I bought a blue paper kite")
+    var alignment = SpeechAlignment()
+    #expect(alignment.consume("I", segment: 0, isFinal: false, script: script, position: 0) == 1)
+    #expect(alignment.consume("I.", segment: 0, isFinal: false, script: script, position: 1) == 1)
+    #expect(alignment.consume("blue", segment: 1, isFinal: false, script: script, position: 1) == nil)
+    #expect(alignment.consume("bought", segment: 2, isFinal: false, script: script, position: 1) == 2)
 }

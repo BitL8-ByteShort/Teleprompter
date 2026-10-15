@@ -10,12 +10,16 @@ struct VoiceScroll {
         let dt = min(1.0 / 30, max(0, elapsed))
         guard dt > 0 else { return offset }
         let target = max(offset, target)
-        let omega = 2.0 / 0.32
+        let omega = 2.0 / 0.16
         let gap = offset - target
         let change = velocity + omega * gap
         let decay = exp(-omega * dt)
         let proposed = target + (gap + change * dt) * decay
-        let maxSpeed = max(1, lineHeight) * 2.5
+        // A fixed speed cap falls permanently behind short lines and makes
+        // recognition bursts take seconds to reach the camera line. Increase
+        // catch-up speed with the gap, then ease back as the display catches up.
+        let height = max(1, lineHeight)
+        let maxSpeed = height * min(12, max(2.5, (target - offset) / height * 6))
         let next = min(target, offset + maxSpeed * dt, max(offset, proposed))
         velocity = min(maxSpeed, max(0, (velocity - omega * change * dt) * decay))
         if next == target { velocity = 0 }

@@ -88,6 +88,18 @@ enum VoiceModelStore {
         recoveringSpeech.onRecognitionReset?()
         recoveringSpeech.onResult?("for recording videos", 0, false)
         check(!recoveryModel.running && recoveryModel.playback.position == 6, "Late recovery events cannot restart a paused take")
+        let followModel = AppModel(storageFolder: folder.appendingPathComponent("voice-catch-up"))
+        followModel.edit("one\ntwo\nthree\nfour\nfive")
+        followModel.updateSettings { $0.mode = .voice; $0.countdownSeconds = 0 }
+        let followingSpeech = SpeechService.current!
+        followModel.togglePlayback()
+        for _ in 0..<100 where followModel.isPreparing { try await Task.sleep(for: .milliseconds(1)) }
+        followingSpeech.onResult?("one two three four", 0, false)
+        check(followModel.playback.position == 4, "Recognition burst advances four short lines")
+        try await Task.sleep(for: .milliseconds(500))
+        check(followModel.readingOffset > followModel.lineHeight * 3.5,
+              "Visible panel catches up to recognized speech within half a second")
+        followModel.shutdown()
         model.importScript(text: "Imported third script", title: "Episode 3")
         let imported = model.library.activeID!
         check(model.library.scripts.count == 3, "Import creates a new script")
